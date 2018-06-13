@@ -1,0 +1,10 @@
+[package]
+name = "burning-pro-server"
+version = "0.1.20180613"
+authors = ["ITSP PBL 2018 Hillclimb team"]
+repository = "https://github.com/pbl-2018-hillclimb/burning-pro-server"
+
+[dependencies]
+
+[badges]
+travis-ci = { repository = "pbl-2018-hillclimb/burning-pro-server" }

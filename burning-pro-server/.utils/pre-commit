@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Copy this file to `.git/hooks/pre-commit` of the local repository.
+
+die() {
+    exit 1
+}
+
+check_formatted() {
+    if [ "${FORMAT:-1}" -ne 0 ] ; then
+        cargo +nightly fmt --all -- --check || die
+    fi
+}
+
+check_formatted

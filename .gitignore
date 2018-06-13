@@ -12,3 +12,7 @@ Thumbs.db
 ## Mac.
 ._*
 .DS_Store
+
+## Rust.
+/target
+/Cargo.lock
