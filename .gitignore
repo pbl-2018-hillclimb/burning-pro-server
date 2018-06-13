@@ -1,0 +1,14 @@
+## Editor temporary files.
+*~
+.*.swp
+
+## Rustfmt backup files.
+*.rs.bk
+*.rs.rustfmt
+
+## Windows.
+Thumbs.db
+
+## Mac.
+._*
+.DS_Store
