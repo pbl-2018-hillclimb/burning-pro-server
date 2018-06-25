@@ -17,6 +17,8 @@ use std::env;
 use actix_web::{server, App, HttpRequest};
 
 mod imprudence;
+pub mod models;
+mod schema;
 
 
 /// Setup global logger.

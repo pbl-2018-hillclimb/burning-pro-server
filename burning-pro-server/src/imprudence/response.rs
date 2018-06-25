@@ -21,7 +21,7 @@ pub struct Imprudence {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Phrase {
     /// Internal ID for DB.
-    pub internal_id: u64,
+    pub internal_id: i32,
     /// Title (short summary).
     pub title: String,
     /// Phrase.
@@ -41,7 +41,7 @@ pub struct Phrase {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Person {
     /// Internal ID for DB.
-    pub internal_id: u64,
+    pub internal_id: i32,
     /// Datetime when the entry is created.
     pub created: DateTime<Local>,
     /// Real name.
