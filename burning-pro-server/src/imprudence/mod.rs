@@ -1,0 +1,3 @@
+//! Imprudence service.
+
+mod response;

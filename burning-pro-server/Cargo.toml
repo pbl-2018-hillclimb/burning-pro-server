@@ -7,8 +7,11 @@ repository = "https://github.com/pbl-2018-hillclimb/burning-pro-server"
 [dependencies]
 actix = "0.5"
 actix-web = "0.6"
+chrono = { version = "0.4", features = ["serde"] }
 log = "0.4"
 pretty_env_logger = "0.2"
+serde = "1"
+serde_derive = "1"
 
 [badges]
 travis-ci = { repository = "pbl-2018-hillclimb/burning-pro-server" }
