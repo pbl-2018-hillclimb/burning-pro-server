@@ -3,12 +3,14 @@
 
 extern crate actix_web;
 extern crate chrono;
+extern crate futures;
 #[macro_use]
 extern crate log;
 extern crate pretty_env_logger;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
+extern crate serde_json;
 
 use std::env;
 
@@ -52,8 +54,11 @@ fn main() {
     );
 
     info!("starting server...");
-    server::new(|| App::new().resource("/", |r| r.f(fire)))
-        .bind("127.0.0.1:8080")
+    server::new(|| {
+        App::new()
+            .resource("/", |r| r.f(fire))
+            .resource("/imprudences/", |r| r.f(imprudence::index))
+    }).bind("127.0.0.1:8080")
         .expect("Failed to bind 127.0.0.1:8080")
         .run();
 }
