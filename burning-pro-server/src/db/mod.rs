@@ -60,8 +60,8 @@ impl Handler<GetImprudences> for DbExecutor {
             .load::<(models::Imprudence, models::Person)>(conn)?;
         let mut result = Vec::new();
         for (imprudence, person) in imprudences_and_persons {
-            let urls = models::PersonAndUrl::belonging_to(&person)
-                .load::<models::PersonAndUrl>(conn)?;
+            let urls = models::PersonUrl::belonging_to(&person)
+                .load::<models::PersonUrl>(conn)?;
             let tags = models::ImprudenceAndTag::belonging_to(&imprudence)
                 .inner_join(schema::imprudence_tags::table)
                 .load::<(models::ImprudenceAndTag, models::ImprudenceTag)>(conn)?;

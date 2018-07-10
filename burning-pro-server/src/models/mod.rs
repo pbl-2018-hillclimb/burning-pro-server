@@ -73,11 +73,11 @@ pub struct ImprudenceAndTag {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable,
          Queryable)]
 #[belongs_to(Person)]
-#[table_name = "person_and_urls"]
-#[primary_key(person_and_url_id)]
-pub struct PersonAndUrl {
+#[table_name = "person_urls"]
+#[primary_key(person_url_id)]
+pub struct PersonUrl {
     /// Row ID.
-    pub person_and_url_id: i32,
+    pub person_url_id: i32,
     /// UTC datetime the row is created at.
     pub created_at: NaiveDateTime,
     /// UTC datetime the row is last modified at.

@@ -33,8 +33,8 @@ table! {
 }
 
 table! {
-    person_and_urls (person_and_url_id) {
-        person_and_url_id -> Integer,
+    person_urls (person_url_id) {
+        person_url_id -> Integer,
         created_at -> Timestamp,
         modified_at -> Timestamp,
         person_id -> Integer,
@@ -56,12 +56,12 @@ table! {
 joinable!(imprudences -> persons (person_id));
 joinable!(imprudences_and_tags -> imprudence_tags (imprudence_tag_id));
 joinable!(imprudences_and_tags -> imprudences (imprudence_id));
-joinable!(person_and_urls -> persons (person_id));
+joinable!(person_urls -> persons (person_id));
 
 allow_tables_to_appear_in_same_query!(
     imprudence_tags,
     imprudences,
     imprudences_and_tags,
-    person_and_urls,
+    person_urls,
     persons,
 );

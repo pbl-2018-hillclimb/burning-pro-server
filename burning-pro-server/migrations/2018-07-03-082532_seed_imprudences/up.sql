@@ -17,8 +17,8 @@ INSERT INTO persons (
     "wtakuo"
 );
 
-INSERT INTO person_and_urls (
-    person_and_url_id,
+INSERT INTO person_urls (
+    person_url_id,
     created_at,
     modified_at,
     person_id,

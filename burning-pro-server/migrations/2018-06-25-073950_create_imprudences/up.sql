@@ -13,8 +13,8 @@ CREATE TABLE persons (
     twitter VARCHAR UNIQUE
 );
 
-CREATE TABLE person_and_urls (
-    person_and_url_id INTEGER NOT NULL PRIMARY KEY,
+CREATE TABLE person_urls (
+    person_url_id INTEGER NOT NULL PRIMARY KEY,
     created_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     modified_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     person_id INTEGER NOT NULL,
