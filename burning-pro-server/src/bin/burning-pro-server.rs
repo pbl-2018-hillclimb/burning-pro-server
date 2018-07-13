@@ -1,43 +1,19 @@
 //! Burning-pro server.
-#![warn(missing_docs)]
+
+extern crate burning_pro_server;
+
+use burning_pro_server::AppState;
 
 extern crate actix;
 extern crate actix_web;
-extern crate chrono;
-#[macro_use]
-extern crate diesel;
 extern crate dotenv;
-#[macro_use]
-extern crate failure;
-extern crate futures;
 #[macro_use]
 extern crate log;
 extern crate pretty_env_logger;
-extern crate r2d2;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
 
 use std::env;
 
-use actix::prelude::*;
 use actix_web::{server, App, HttpRequest};
-use diesel::prelude::*;
-use diesel::r2d2::ConnectionManager;
-
-use db::DbExecutor;
-
-pub mod db;
-mod imprudence;
-pub mod models;
-mod schema;
-
-/// Application-wide states.
-pub struct AppState {
-    /// Address of DB executor actor.
-    pub db: Addr<Syn, DbExecutor>,
-}
 
 /// Setup global logger.
 fn setup_logger() {
@@ -88,18 +64,13 @@ fn main() {
     let sys = actix::System::new("burning-pro-server");
 
     let database_url = env::var("DATABASE_URL").expect("`DATABASE_URL` envvar must be set");
-    let manager = ConnectionManager::<SqliteConnection>::new(database_url);
-    let pool = r2d2::Pool::builder()
-        .build(manager)
-        .expect("Failed to create connection pool");
-
-    let addr = SyncArbiter::start(3, move || DbExecutor(pool.clone()));
+    let app_state = AppState::from_database_url(database_url);
 
     info!("starting server ({})...", listen);
     server::new(move || {
-        App::with_state(AppState { db: addr.clone() })
+        App::with_state(app_state.clone())
             .resource("/", |r| r.with(fire))
-            .resource("/imprudences/", |r| r.with(imprudence::index))
+            .resource("/imprudences/", |r| r.with(burning_pro_server::imprudence::index))
     }).bind(listen)
         .unwrap_or_else(|e| {
             panic!("Failed to bind {}: {}", listen, e);
