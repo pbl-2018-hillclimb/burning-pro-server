@@ -1,4 +1,4 @@
-//! Server app.
+//! Server app state.
 
 use std::error;
 
