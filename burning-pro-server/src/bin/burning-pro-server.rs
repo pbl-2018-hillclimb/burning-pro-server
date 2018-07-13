@@ -64,6 +64,7 @@ fn main() {
     let sys = actix::System::new("burning-pro-server");
 
     let database_url = env::var("DATABASE_URL").expect("`DATABASE_URL` envvar must be set");
+    info!("Database URL: {}", database_url);
     let app_state = AppStateBuilder::new()
         .database_url(database_url)
         .build()
