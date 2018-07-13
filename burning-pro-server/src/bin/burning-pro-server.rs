@@ -2,7 +2,7 @@
 
 extern crate burning_pro_server;
 
-use burning_pro_server::AppState;
+use burning_pro_server::app::{AppState, AppStateBuilder};
 
 extern crate actix;
 extern crate actix_web;
@@ -64,13 +64,18 @@ fn main() {
     let sys = actix::System::new("burning-pro-server");
 
     let database_url = env::var("DATABASE_URL").expect("`DATABASE_URL` envvar must be set");
-    let app_state = AppState::from_database_url(database_url);
+    let app_state = AppStateBuilder::new()
+        .database_url(database_url)
+        .build()
+        .expect("Failed to build application state");
 
     info!("starting server ({})...", listen);
     server::new(move || {
         App::with_state(app_state.clone())
             .resource("/", |r| r.with(fire))
-            .resource("/imprudences/", |r| r.with(burning_pro_server::imprudence::index))
+            .resource("/imprudences/", |r| {
+                r.with(burning_pro_server::imprudence::index)
+            })
     }).bind(listen)
         .unwrap_or_else(|e| {
             panic!("Failed to bind {}: {}", listen, e);

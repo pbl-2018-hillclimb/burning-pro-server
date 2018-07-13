@@ -4,8 +4,8 @@ use actix::prelude::*;
 use actix_web::{AsyncResponder, Error, FutureResponse, HttpRequest, HttpResponse};
 use futures::future::Future;
 
+use app::AppState;
 use db::{DbExecutor, GetImprudences};
-use AppState;
 
 pub mod response;
 
