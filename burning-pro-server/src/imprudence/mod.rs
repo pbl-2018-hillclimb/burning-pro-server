@@ -12,7 +12,7 @@ pub mod response;
 /// Processes the request for imprudence texts.
 #[allow(unknown_lints, needless_pass_by_value)]
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
-    fetch_imprudences(&req.state().db).responder()
+    fetch_imprudences(req.state().db()).responder()
 }
 
 /// Returns the imprudences.

@@ -13,7 +13,14 @@ use db::DbExecutor;
 #[derive(Clone)]
 pub struct AppState {
     /// Address of DB executor actor.
-    pub db: Addr<Syn, DbExecutor>,
+    db: Addr<Syn, DbExecutor>,
+}
+
+impl AppState {
+    /// Returns an address for DB executor actor.
+    pub fn db(&self) -> &Addr<Syn, DbExecutor> {
+        &self.db
+    }
 }
 
 /// `AppState` builder.
