@@ -24,6 +24,13 @@ impl AppState {
 }
 
 /// `AppState` builder.
+///
+/// This type should be used to initialize `AppState`.
+///
+/// `AppState` may have many types of fields and may require complex
+/// initialization.
+/// `AppStateBuilder` makes it easy for developers to set variety of fields and
+/// does some initialization if necessary.
 #[derive(Default, Debug, Clone)]
 pub struct AppStateBuilder {
     /// Database URL.
@@ -37,6 +44,9 @@ impl AppStateBuilder {
     }
 
     /// Sets `database_url` field with the given database URL.
+    ///
+    /// This setter does not do any DB operation, such as I/O operations and
+    /// connection pool initialization.
     pub fn database_url<S: Into<String>>(self, database_url: S) -> Self {
         Self {
             database_url: Some(database_url.into()),
@@ -44,6 +54,12 @@ impl AppStateBuilder {
     }
 
     /// Builds the `AppState`.
+    ///
+    /// This method will ensure that all of required field values are set and
+    /// some objects / resources are correctly initialized.
+    ///
+    /// If the builder lacks required field values or resource initializations
+    /// fail, then it will return `Err(_)`.
     pub fn build(self) -> Result<AppState, Box<error::Error + Send + Sync>> {
         let db = {
             let database_url = self

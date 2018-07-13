@@ -9,7 +9,10 @@ use imprudence::response;
 use models;
 use schema;
 
-/// Message to get imprudences.
+/// A message type to get imprudences.
+///
+/// This may have query parameters to limit or filter results (while it does not
+/// for now).
 #[derive(Debug, Clone)]
 pub struct GetImprudences;
 

@@ -17,8 +17,8 @@ pub enum Error {
     /// Connection pool error.
     #[fail(display = "Connection pool error: {}", _0)]
     ConnectionPool(r2d2::Error),
-    /// Diesel query error.
-    #[fail(display = "DB query error: {}", _0)]
+    /// Diesel operation error.
+    #[fail(display = "DB operation error: {}", _0)]
     Db(diesel::result::Error),
 }
 
@@ -37,6 +37,10 @@ impl From<diesel::result::Error> for Error {
 impl ResponseError for Error {}
 
 /// DB operation executor.
+///
+/// Objects of this type are actors, which receives DB operation request
+/// messages and return `future`s (handles of async calculation result) of DB
+/// operation result.
 pub struct DbExecutor {
     /// Connection pool.
     pool: Pool<ConnectionManager<SqliteConnection>>,
