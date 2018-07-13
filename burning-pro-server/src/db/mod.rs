@@ -1,7 +1,6 @@
 //! DB executor actor.
 
 use actix::prelude::*;
-//use actix_web::Error;
 use actix_web::error::ResponseError;
 use chrono::{DateTime, FixedOffset};
 use diesel;
