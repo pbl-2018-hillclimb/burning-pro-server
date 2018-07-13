@@ -19,5 +19,5 @@ extern crate serde_json;
 pub mod app;
 pub mod db;
 pub mod imprudence;
-pub mod models;
+pub(crate) mod models;
 mod schema;
