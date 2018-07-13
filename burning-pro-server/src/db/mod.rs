@@ -36,8 +36,23 @@ impl From<diesel::result::Error> for Error {
 
 impl ResponseError for Error {}
 
-/// DB executor.
-pub struct DbExecutor(pub Pool<ConnectionManager<SqliteConnection>>);
+/// DB operation executor.
+pub struct DbExecutor {
+    /// Connection pool.
+    pool: Pool<ConnectionManager<SqliteConnection>>,
+}
+
+impl DbExecutor {
+    /// Creates a new `DbExecutor` from the given connection pool.
+    pub fn new(pool: Pool<ConnectionManager<SqliteConnection>>) -> Self {
+        Self { pool }
+    }
+
+    /// Returns a connection pool.
+    pub fn pool(&self) -> &Pool<ConnectionManager<SqliteConnection>> {
+        &self.pool
+    }
+}
 
 impl Actor for DbExecutor {
     type Context = SyncContext<Self>;

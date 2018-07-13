@@ -51,7 +51,7 @@ impl AppStateBuilder {
                 .ok_or("`database_url` field is required but not set")?;
             let manager = ConnectionManager::<SqliteConnection>::new(database_url);
             let pool = r2d2::Pool::builder().build(manager)?;
-            SyncArbiter::start(3, move || DbExecutor(pool.clone()))
+            SyncArbiter::start(3, move || DbExecutor::new(pool.clone()))
         };
         Ok(AppState { db })
     }

@@ -24,7 +24,7 @@ impl Handler<GetImprudences> for DbExecutor {
         // Local offset.
         let tz_offset = FixedOffset::east(9 * 60 * 60);
 
-        let conn = &self.0.get()?;
+        let conn = &self.pool().get()?;
         let imprudences_and_persons = schema::imprudences::table
             .inner_join(schema::persons::table)
             .load::<(models::Imprudence, models::Person)>(conn)?;
