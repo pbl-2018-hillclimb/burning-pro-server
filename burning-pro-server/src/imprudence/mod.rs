@@ -9,17 +9,16 @@ use AppState;
 
 pub mod response;
 
-
 /// Processes the request for imprudence texts.
 #[allow(unknown_lints, needless_pass_by_value)]
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
-    fetch_imprudences(&req.state().db)
-        .responder()
+    fetch_imprudences(&req.state().db).responder()
 }
 
-
 /// Returns the imprudences.
-fn fetch_imprudences(db: &Addr<Syn, DbExecutor>) -> impl Future<Item = HttpResponse, Error = Error> {
+fn fetch_imprudences(
+    db: &Addr<Syn, DbExecutor>,
+) -> impl Future<Item = HttpResponse, Error = Error> {
     db.send(GetImprudences)
         .from_err()
         .and_then(|res| match res {

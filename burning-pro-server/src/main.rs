@@ -33,13 +33,11 @@ mod imprudence;
 pub mod models;
 mod schema;
 
-
 /// Application-wide states.
 pub struct AppState {
     /// Address of DB executor actor.
     pub db: Addr<Syn, DbExecutor>,
 }
-
 
 /// Setup global logger.
 fn setup_logger() {
@@ -58,14 +56,12 @@ fn setup_logger() {
     trace!("RUST_LOG={}", newval);
 }
 
-
 #[allow(unknown_lints, needless_pass_by_value)]
 fn fire(req: HttpRequest<AppState>) -> &'static str {
     debug!("request for `fire()`: {:?}", req);
     // Fire.
     "\u{1F525}"
 }
-
 
 fn main() {
     match dotenv::dotenv() {

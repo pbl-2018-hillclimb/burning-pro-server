@@ -2,7 +2,6 @@
 
 use chrono::{DateTime, Local};
 
-
 /// An imprudence.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Imprudence {
@@ -15,7 +14,6 @@ pub struct Imprudence {
     /// User metadata.
     pub user_meta: UserMeta,
 }
-
 
 /// A phrase.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -36,7 +34,6 @@ pub struct Phrase {
     pub datetime: Option<DateTime<Local>>,
 }
 
-
 /// A person.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct Person {
@@ -54,7 +51,6 @@ pub struct Person {
     pub twitter: Option<String>,
 }
 
-
 /// System-wide metadata.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct SysMeta {
@@ -65,7 +61,6 @@ pub struct SysMeta {
     /// System-wide "tag" for the phrase.
     pub tags: Vec<String>,
 }
-
 
 /// User-local metadata.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

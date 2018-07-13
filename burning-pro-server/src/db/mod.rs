@@ -13,7 +13,6 @@ use imprudence::response;
 use models;
 use schema;
 
-
 /// DB operation error.
 #[derive(Debug, Fail)]
 pub enum Error {
@@ -39,7 +38,6 @@ impl From<diesel::result::Error> for Error {
 
 impl ResponseError for Error {}
 
-
 /// DB executor.
 pub struct DbExecutor(pub Pool<ConnectionManager<SqliteConnection>>);
 
@@ -60,8 +58,7 @@ impl Handler<GetImprudences> for DbExecutor {
             .load::<(models::Imprudence, models::Person)>(conn)?;
         let mut result = Vec::new();
         for (imprudence, person) in imprudences_and_persons {
-            let urls = models::PersonUrl::belonging_to(&person)
-                .load::<models::PersonUrl>(conn)?;
+            let urls = models::PersonUrl::belonging_to(&person).load::<models::PersonUrl>(conn)?;
             let tags = models::ImprudenceAndTag::belonging_to(&imprudence)
                 .inner_join(schema::imprudence_tags::table)
                 .load::<(models::ImprudenceAndTag, models::ImprudenceTag)>(conn)?;
@@ -107,7 +104,6 @@ impl Handler<GetImprudences> for DbExecutor {
         Ok(result)
     }
 }
-
 
 /// Message to get imprudences.
 #[derive(Debug, Clone)]
