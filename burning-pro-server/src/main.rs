@@ -68,7 +68,17 @@ fn fire(req: HttpRequest<AppState>) -> &'static str {
 
 
 fn main() {
-    dotenv::dotenv().expect("Dotenv initialization failed");
+    match dotenv::dotenv() {
+        Ok(path) => info!("Successfully loaded dotenv file: {}", path.display()),
+        Err(e) => {
+            if e.not_found() {
+                info!("No dotenv file found");
+            } else {
+                error!("Dotenv initialization failed: {}", e);
+                panic!("Dotenv initialization failed: {:?}", e);
+            }
+        },
+    }
     setup_logger();
 
     info!(
