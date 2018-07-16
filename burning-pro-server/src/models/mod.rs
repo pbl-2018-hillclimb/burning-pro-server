@@ -3,7 +3,6 @@ use chrono::NaiveDateTime;
 
 use schema::*;
 
-
 /// Imprudence tag.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable)]
 #[primary_key(imprudence_tag_id)]
@@ -20,10 +19,10 @@ pub struct ImprudenceTag {
     pub description: Option<String>,
 }
 
-
 /// Imprudence.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable,
-         Queryable)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
+)]
 #[belongs_to(Person)]
 #[primary_key(imprudence_id)]
 pub struct Imprudence {
@@ -47,10 +46,10 @@ pub struct Imprudence {
     pub published_at: Option<NaiveDateTime>,
 }
 
-
 /// Imprudence and tag.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable,
-         Queryable)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
+)]
 #[belongs_to(Imprudence)]
 #[belongs_to(ImprudenceTag)]
 #[table_name = "imprudences_and_tags"]
@@ -68,10 +67,10 @@ pub struct ImprudenceAndTag {
     pub imprudence_tag_id: i32,
 }
 
-
 /// Person and URL.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable,
-         Queryable)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
+)]
 #[belongs_to(Person)]
 #[table_name = "person_urls"]
 #[primary_key(person_url_id)]
@@ -87,7 +86,6 @@ pub struct PersonUrl {
     /// URL.
     pub url: String,
 }
-
 
 /// Person.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable)]
