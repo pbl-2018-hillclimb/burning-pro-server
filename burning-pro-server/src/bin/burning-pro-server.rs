@@ -13,6 +13,7 @@ extern crate pretty_env_logger;
 
 use std::env;
 
+use actix_web::middleware::Logger;
 use actix_web::{server, App, HttpRequest};
 
 /// Setup global logger.
@@ -21,8 +22,9 @@ fn setup_logger() {
     let underscored_name = env!("CARGO_PKG_NAME").replace('-', "_");
     let defval = format!("{}={}", underscored_name, DEFAULT_LOG_LEVEL);
 
+    // `actix_web=info` to print access log by `actix_web::middleware::Logger`.
     let newval = match env::var("RUST_LOG") {
-        Ok(v) => format!("{},{}", defval, v),
+        Ok(v) => format!("actix_web=info,{},{}", defval, v),
         Err(_) => defval,
     };
     env::set_var("RUST_LOG", &newval);
@@ -73,6 +75,7 @@ fn main() {
     info!("starting server ({})...", listen);
     server::new(move || {
         App::with_state(app_state.clone())
+            .middleware(Logger::default())
             .resource("/", |r| r.with(fire))
             .resource("/imprudences/", |r| {
                 r.with(burning_pro_server::imprudence::index)
