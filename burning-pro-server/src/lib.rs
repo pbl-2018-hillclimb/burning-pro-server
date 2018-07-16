@@ -10,6 +10,8 @@ extern crate dotenv;
 #[macro_use]
 extern crate failure;
 extern crate futures;
+#[macro_use]
+extern crate log;
 extern crate r2d2;
 extern crate serde;
 #[macro_use]

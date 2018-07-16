@@ -12,6 +12,7 @@ pub mod response;
 /// Processes the request for imprudence texts.
 #[allow(unknown_lints, needless_pass_by_value)]
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+    debug!("request for `imprudences::index()`: {:?}", req);
     fetch_imprudences(req.state().db()).responder()
 }
 
@@ -23,6 +24,9 @@ fn fetch_imprudences(
         .from_err()
         .and_then(|res| match res {
             Ok(contents) => Ok(HttpResponse::Ok().json(contents)),
-            Err(_) => Ok(HttpResponse::InternalServerError().into()),
+            Err(e) => {
+                error!("`fetch_imprudences()`: {}", e);
+                Ok(HttpResponse::InternalServerError().into())
+            },
         })
 }
