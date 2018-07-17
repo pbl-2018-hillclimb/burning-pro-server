@@ -61,7 +61,8 @@ fn main() {
         env!("CARGO_PKG_VERSION")
     );
 
-    let listen = "127.0.0.1:8080";
+    // TODO: Use config file to determine address and port to listen.
+    let listen = "0.0.0.0:8080";
 
     let sys = actix::System::new("burning-pro-server");
 
