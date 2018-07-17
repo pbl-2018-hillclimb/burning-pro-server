@@ -7,9 +7,9 @@ use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use r2d2;
 
-pub use self::get_imprudences::GetImprudences;
+pub use self::get_good_phrases::GetGoodPhrases;
 
-mod get_imprudences;
+mod get_good_phrases;
 
 /// DB operation error.
 #[derive(Debug, Fail)]

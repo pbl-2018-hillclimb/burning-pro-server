@@ -3,12 +3,12 @@ use chrono::NaiveDateTime;
 
 use schema::*;
 
-/// Imprudence tag.
+/// GoodPhrase tag.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable)]
-#[primary_key(imprudence_tag_id)]
-pub struct ImprudenceTag {
+#[primary_key(good_phrase_tag_id)]
+pub struct GoodPhraseTag {
     /// Row ID.
-    pub imprudence_tag_id: i32,
+    pub good_phrase_tag_id: i32,
     /// UTC datetime the row is created at.
     pub created_at: NaiveDateTime,
     /// UTC datetime the row is last modified at.
@@ -19,15 +19,15 @@ pub struct ImprudenceTag {
     pub description: Option<String>,
 }
 
-/// Imprudence.
+/// GoodPhrase.
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
 )]
 #[belongs_to(Person)]
-#[primary_key(imprudence_id)]
-pub struct Imprudence {
+#[primary_key(good_phrase_id)]
+pub struct GoodPhrase {
     /// Row ID.
-    pub imprudence_id: i32,
+    pub good_phrase_id: i32,
     /// UTC datetime the row is created at.
     pub created_at: NaiveDateTime,
     /// UTC datetime the row is last modified at.
@@ -46,25 +46,25 @@ pub struct Imprudence {
     pub published_at: Option<NaiveDateTime>,
 }
 
-/// Imprudence and tag.
+/// GoodPhrase and tag.
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
 )]
-#[belongs_to(Imprudence)]
-#[belongs_to(ImprudenceTag)]
-#[table_name = "imprudences_and_tags"]
-#[primary_key(imprudence_and_tag_id)]
-pub struct ImprudenceAndTag {
+#[belongs_to(GoodPhrase)]
+#[belongs_to(GoodPhraseTag)]
+#[table_name = "good_phrases_and_tags"]
+#[primary_key(good_phrase_and_tag_id)]
+pub struct GoodPhraseAndTag {
     /// Row ID.
-    pub imprudence_and_tag_id: i32,
+    pub good_phrase_and_tag_id: i32,
     /// UTC datetime the row is created at.
     pub created_at: NaiveDateTime,
     /// UTC datetime the row is last modified at.
     pub modified_at: NaiveDateTime,
-    /// Imprudence ID.
-    pub imprudence_id: i32,
-    /// Imprudence tag ID.
-    pub imprudence_tag_id: i32,
+    /// GoodPhrase ID.
+    pub good_phrase_id: i32,
+    /// GoodPhrase tag ID.
+    pub good_phrase_tag_id: i32,
 }
 
 /// Person and URL.
