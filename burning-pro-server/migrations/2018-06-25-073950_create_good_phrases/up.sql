@@ -23,8 +23,8 @@ CREATE TABLE person_urls (
     UNIQUE(person_id, url)
 );
 
-CREATE TABLE imprudences (
-    imprudence_id INTEGER NOT NULL PRIMARY KEY,
+CREATE TABLE good_phrases (
+    good_phrase_id INTEGER NOT NULL PRIMARY KEY,
     created_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     modified_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     title VARCHAR UNIQUE NOT NULL,
@@ -37,21 +37,21 @@ CREATE TABLE imprudences (
     UNIQUE(phrase, person_id)
 );
 
-CREATE TABLE imprudence_tags (
-    imprudence_tag_id INTEGER NOT NULL PRIMARY KEY,
+CREATE TABLE good_phrase_tags (
+    good_phrase_tag_id INTEGER NOT NULL PRIMARY KEY,
     created_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     modified_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     name VARCHAR UNIQUE NOT NULL,
     description VARCHAR
 );
 
-CREATE TABLE imprudences_and_tags (
-    imprudence_and_tag_id INTEGER NOT NULL PRIMARY KEY,
+CREATE TABLE good_phrases_and_tags (
+    good_phrase_and_tag_id INTEGER NOT NULL PRIMARY KEY,
     created_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     modified_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
-    imprudence_id INTEGER NOT NULL,
-    imprudence_tag_id INTEGER NOT NULL,
-    FOREIGN KEY(imprudence_id) REFERENCES imprudences(imprudence_id),
-    FOREIGN KEY(imprudence_tag_id) REFERENCES imprudence_tags(imprudence_tag_id),
-    UNIQUE(imprudence_id, imprudence_tag_id)
+    good_phrase_id INTEGER NOT NULL,
+    good_phrase_tag_id INTEGER NOT NULL,
+    FOREIGN KEY(good_phrase_id) REFERENCES good_phrases(good_phrase_id),
+    FOREIGN KEY(good_phrase_tag_id) REFERENCES good_phrase_tags(good_phrase_tag_id),
+    UNIQUE(good_phrase_id, good_phrase_tag_id)
 );

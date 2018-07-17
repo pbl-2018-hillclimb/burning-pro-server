@@ -2,9 +2,9 @@
 
 use chrono::{DateTime, Local};
 
-/// An imprudence.
+/// An good_phrase.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-pub struct Imprudence {
+pub struct GoodPhrase {
     /// Phrase.
     pub phrase: Phrase,
     /// Person.

@@ -1,6 +1,6 @@
 table! {
-    imprudence_tags (imprudence_tag_id) {
-        imprudence_tag_id -> Integer,
+    good_phrase_tags (good_phrase_tag_id) {
+        good_phrase_tag_id -> Integer,
         created_at -> Timestamp,
         modified_at -> Timestamp,
         name -> Text,
@@ -9,8 +9,8 @@ table! {
 }
 
 table! {
-    imprudences (imprudence_id) {
-        imprudence_id -> Integer,
+    good_phrases (good_phrase_id) {
+        good_phrase_id -> Integer,
         created_at -> Timestamp,
         modified_at -> Timestamp,
         title -> Text,
@@ -23,12 +23,12 @@ table! {
 }
 
 table! {
-    imprudences_and_tags (imprudence_and_tag_id) {
-        imprudence_and_tag_id -> Integer,
+    good_phrases_and_tags (good_phrase_and_tag_id) {
+        good_phrase_and_tag_id -> Integer,
         created_at -> Timestamp,
         modified_at -> Timestamp,
-        imprudence_id -> Integer,
-        imprudence_tag_id -> Integer,
+        good_phrase_id -> Integer,
+        good_phrase_tag_id -> Integer,
     }
 }
 
@@ -53,15 +53,15 @@ table! {
     }
 }
 
-joinable!(imprudences -> persons (person_id));
-joinable!(imprudences_and_tags -> imprudence_tags (imprudence_tag_id));
-joinable!(imprudences_and_tags -> imprudences (imprudence_id));
+joinable!(good_phrases -> persons (person_id));
+joinable!(good_phrases_and_tags -> good_phrase_tags (good_phrase_tag_id));
+joinable!(good_phrases_and_tags -> good_phrases (good_phrase_id));
 joinable!(person_urls -> persons (person_id));
 
 allow_tables_to_appear_in_same_query!(
-    imprudence_tags,
-    imprudences,
-    imprudences_and_tags,
+    good_phrase_tags,
+    good_phrases,
+    good_phrases_and_tags,
     person_urls,
     persons,
 );

@@ -31,8 +31,8 @@ INSERT INTO person_urls (
     "https://twitter.com/wtakuo"
 );
 
-INSERT INTO imprudences (
-    imprudence_id,
+INSERT INTO good_phrases (
+    good_phrase_id,
     created_at,
     modified_at,
     title,
@@ -53,8 +53,8 @@ INSERT INTO imprudences (
     "2016-01-18T00:23:05.319"
 );
 
-INSERT INTO imprudence_tags (
-    imprudence_tag_id,
+INSERT INTO good_phrase_tags (
+    good_phrase_tag_id,
     created_at,
     modified_at,
     name,
@@ -67,12 +67,12 @@ INSERT INTO imprudence_tags (
     "炎上した過去を持つ発言"
 );
 
-INSERT INTO imprudences_and_tags (
-    imprudence_and_tag_id,
+INSERT INTO good_phrases_and_tags (
+    good_phrase_and_tag_id,
     created_at,
     modified_at,
-    imprudence_id,
-    imprudence_tag_id
+    good_phrase_id,
+    good_phrase_tag_id
 ) VALUES (
     0,
     "2018-07-03T08:32:34",

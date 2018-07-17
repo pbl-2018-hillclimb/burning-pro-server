@@ -77,8 +77,8 @@ fn main() {
         App::with_state(app_state.clone())
             .middleware(Logger::default())
             .resource("/", |r| r.with(fire))
-            .resource("/imprudences/", |r| {
-                r.with(burning_pro_server::imprudence::index)
+            .resource("/good_phrases/", |r| {
+                r.with(burning_pro_server::good_phrase::index)
             })
     }).bind(listen)
         .unwrap_or_else(|e| {
