@@ -18,7 +18,7 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 
 /// Returns the good_phrases.
 fn fetch_good_phrases(
-    db: &Addr<Syn, DbExecutor>,
+    db: &Addr<DbExecutor>,
 ) -> impl Future<Item = HttpResponse, Error = Error> {
     db.send(GetGoodPhrases)
         .from_err()
