@@ -14,16 +14,12 @@ $ curl https://sh.rustup.rs -sSf | sh
 
 #### 任意
 
-不安定版 (unstable) の rustc 、 cargo 、 rustfmt (コードフォーマッタ)、 clippy (lint) のインストール:
+rustc 、 cargo 、 rustfmt (コードフォーマッタ)、 clippy (lint) のインストール:
 
 ```sh
-$ rustup toolchain install nightly
-$ rustup component add rustfmt-preview --toolchain nightly
-$ cargo +nightly install -f clippy
+$ rustup component add rustfmt-preview
+$ rustup component add clippy-preview
 ```
-
-nightly コンパイラのバージョンと clippy のバージョンによっては、 clippy はビルドに失敗する。
-(この場合、 [clippy のリポジトリ](https://github.com/rust-lang-nursery/rust-clippy)の master を使うか、諦める。)
 
 
 ### diesel-cli
@@ -115,24 +111,18 @@ $ cargo doc --open
 
 ## コードフォーマット
 
-不安定版の cargo と rustfmt を用いる。
-(安定版は、本プロジェクトで利用する機能が不足している。)
-
 `/burning-pro-server` にて実行する。
 
 ```sh
-$ cargo +nightly fmt
+$ cargo fmt
 ```
 
-## (参考) lint
-
-不安定版の cargo と clippy を用いる。
-正直面倒なので常用する必要はない(が、本当に lint が欲しいなら使った方がよい)。
+## lint
 
 `/burning-pro-server` にて実行する。
 
 ```sh
-$ cargo +nightly clippy
+$ cargo clippy
 ```
 
 
