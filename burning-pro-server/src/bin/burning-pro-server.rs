@@ -51,7 +51,7 @@ fn main() {
                 error!("Dotenv initialization failed: {}", e);
                 panic!("Dotenv initialization failed: {:?}", e);
             }
-        },
+        }
     }
     setup_logger();
 
@@ -82,10 +82,9 @@ fn main() {
                 r.with(burning_pro_server::good_phrase::index)
             })
     }).bind(listen)
-        .unwrap_or_else(|e| {
-            panic!("Failed to bind {}: {}", listen, e);
-        })
-        .start();
+    .unwrap_or_else(|e| {
+        panic!("Failed to bind {}: {}", listen, e);
+    }).start();
 
     info!("started server ({})", listen);
 
