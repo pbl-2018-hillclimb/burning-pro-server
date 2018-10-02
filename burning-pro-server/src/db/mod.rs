@@ -9,6 +9,7 @@ use r2d2;
 
 pub use self::get_good_phrases::GetGoodPhrases;
 
+pub mod admin;
 mod get_good_phrases;
 
 /// DB operation error.
