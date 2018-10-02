@@ -14,7 +14,7 @@ extern crate pretty_env_logger;
 use std::env;
 
 use actix_web::middleware::Logger;
-use actix_web::{server, App, HttpRequest};
+use actix_web::{server, http, App, HttpRequest};
 
 /// Setup global logger.
 fn setup_logger() {
@@ -80,6 +80,9 @@ fn main() {
             .resource("/", |r| r.with(fire))
             .resource("/good_phrases/", |r| {
                 r.with(burning_pro_server::good_phrase::index)
+            })
+            .resource("/register/", |r| {
+                r.method(http::Method::GET).with(burning_pro_server::db_update::index)
             })
     }).bind(listen)
     .unwrap_or_else(|e| {
