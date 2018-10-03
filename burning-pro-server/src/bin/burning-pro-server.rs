@@ -3,6 +3,7 @@
 extern crate burning_pro_server;
 
 use burning_pro_server::app::{AppState, AppStateBuilder};
+use burning_pro_server::{good_phrase, admin};
 
 extern crate actix;
 extern crate actix_web;
@@ -39,6 +40,29 @@ fn fire(req: HttpRequest<AppState>) -> &'static str {
     debug!("request for `fire()`: {:?}", req);
     // Fire.
     "\u{1F525}"
+}
+
+macro_rules! regist_form_handler {
+    ($root:path, $new:path, $update:path, $post:path) =>
+        {
+            |scope| {
+                scope
+                    .resource("/", |r| {
+                        r.with($root)
+                    })
+                    .resource("/new/", |r| {
+                        r.with($new)
+                    })
+                    .resource("/update/{id}/", |r| {
+                        r.with($update)
+                    })
+                    .resource("/post/", |r| {
+                        r.method(http::Method::POST).with_config($post, |(_, cfg)| {
+                            cfg.error_handler(admin::post_err_handler);
+                        })
+                    })
+            }
+        }
 }
 
 fn main() {
@@ -79,11 +103,29 @@ fn main() {
             .middleware(Logger::default())
             .resource("/", |r| r.with(fire))
             .resource("/good_phrases/", |r| {
-                r.with(burning_pro_server::good_phrase::index)
+                r.with(good_phrase::index)
             })
             .resource("/register/", |r| {
-                r.method(http::Method::GET).with(burning_pro_server::db_update::index)
+                r.with(admin::index)
             })
+            .scope("/register/phrase", regist_form_handler!(
+                admin::phrase::index,
+                admin::phrase::new,
+                admin::phrase::update,
+                admin::phrase::post
+            ))
+            .scope("/register/tag", regist_form_handler!(
+                admin::tag::index,
+                admin::tag::new,
+                admin::tag::update,
+                admin::tag::post
+            ))
+            .scope("/register/person", regist_form_handler!(
+                admin::person::index,
+                admin::person::new,
+                admin::person::update,
+                admin::person::post
+            ))
     }).bind(listen)
     .unwrap_or_else(|e| {
         panic!("Failed to bind {}: {}", listen, e);

@@ -23,6 +23,6 @@ extern crate tera;
 pub mod app;
 pub mod db;
 pub mod good_phrase;
-pub mod db_update;
+pub mod admin;
 pub(crate) mod models;
 mod schema;

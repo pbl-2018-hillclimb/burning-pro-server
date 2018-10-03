@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>発言者の更新</title>
+  </head>
+  <body>
+    <h1>発言者の更新</h1>
+    <p>
+      <a href="/register/person/new/">新規登録</a>
+    </p>
+    <h3>更新</h3>
+    <p>
+      <table>
+        {% for person in rows %}
+        <tr><td>
+            <a href="/register/person/update/{{ person.person_id }}/">
+              {{ person.display_name }}
+            </a>
+        </td></tr>
+        {% endfor %}
+      </table>
+    </p>
+    <a href="/register/">戻る</a>
+  </body>
+</html>

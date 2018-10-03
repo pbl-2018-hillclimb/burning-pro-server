@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>タグの登録</title>
+  </head>
+  <body>
+    <h1>タグの登録</h1>
+    <p>
+      <form action="/register/tag/post/" method="post">
+        <p>*印は必須フィールドです</p>
+        <p>
+          *タグ名</br>
+          <input type="text" name="name"
+                 value="{{ tag.name }}"required /><br/>
+          タグの詳細</br>
+          <textarea name="description" cols="50" rows="5" wrap="soft">
+{{ tag.description }}
+          </textarea><br/>
+
+          <input type="hidden" name=".good_phrase_tag_id"
+                 value="{{ tag.good_phrase_tag_id }}" />
+          <input type="submit">
+        </p>
+      </form>
+    </p>
+    <a href="/register/tag/">戻る</a>
+  </body>
+</html>
+

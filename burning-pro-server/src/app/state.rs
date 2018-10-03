@@ -27,7 +27,7 @@ impl AppState {
     }
 
     /// Returns a tera template.
-    pub fn template(&self) -> &Tera {
+    pub fn template(&self) -> &Arc<Tera> {
         &self.template
     }
 }

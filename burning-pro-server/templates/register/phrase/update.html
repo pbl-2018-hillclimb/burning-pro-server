@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>†いい発言†の登録</title>
+  </head>
+  <body>
+    <h1>†いい発言†の登録</h1>
+    <p>
+      <form action="/register/phrase/post/" method="post">
+        <p>*印は必須フィールドです</p>
+        <p>
+          *タイトル<br/>
+          <input type="text" name="title"
+                 value="{{ phrase.title }}" required /><br/>
+          *発言<br/>
+          <textarea name="phrase" cols="50" rows="5" wrap="soft">
+{{ phrase.phrase }}
+          </textarea>
+          <br/>
+          *発言者<br/>
+          <select name="person_id" required>
+            <option value=""></option>
+            {% for person in all_person %}
+            <option value="{{ person.person_id }}"
+                    {% if person.person_id == phrase.person_id %}
+                      selected="selected"
+                    {% endif %}>
+              {{ person.display_name }}
+            </option>
+            {% endfor %}
+          </select></br>
+          元ネタURL<br/>
+          <input type="text" name="url"
+                 value="{{ phrase.url }}"/><br/>
+          *元ネタ削除済み?<br/>
+          <input type="radio" name="deleted" value="true"
+                 {% if phrase.deleted %} checked {% endif%} /> Yes
+          <input type="radio" name="deleted" value="false"
+                 {% if not phrase.deleted %} checked {% endif %} /> No<br/>
+          元ネタ投稿日時<br/>
+          <input type="datetime-local" name="published_at" /><br/>
+          タグ<br/>
+          {% for tag in all_tag %}
+            {{ tag.name }} 
+            <input type="checkbox" name="tags_{{ tag.good_phrase_tag_id }}"
+                   value="{{ tag.good_phrase_tag_id }}"
+                   {% for ptag in phrase_tag %}
+                     {% if tag.good_phrase_tag_id == ptag.good_phrase_tag_id %}
+                       checked="checked" {% break %}
+                     {% endif %}
+                   {% endfor %}><br/>
+          {% endfor %}
+
+            <input type="hidden" name="good_phrase_id"
+                   value="{{ phrase.good_phrase_id }}" />
+          {% for person in all_person %}
+            <input type="hidden" name="person_name_{{ person.person_id }}"
+                   value="{{ person.display_name }}" />
+          {% endfor %}
+          {% for tag in all_tag %}
+            <input type="hidden" name="tag_name_{{ tag.good_phrase_tag_id }}"
+                   value="{{ tag.name }}" />
+          {% endfor %}
+          <input type="submit">
+        </p>
+      </form>
+    </p>
+    <a href="/register/phrase/">戻る</a>
+  </body>
+</html>
+

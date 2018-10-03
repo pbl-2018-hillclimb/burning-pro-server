@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>†いい発言†の更新</title>
+  </head>
+  <body>
+    <h1>†いい発言†の更新</h1>
+    <p>
+      <a href="/register/phrase/new/">新規登録</a>
+    </p>
+    <h3>更新</h3>
+    <p>
+      <table>
+        {% for phrase in rows %}
+        <tr><td>
+            <a href="/register/phrase/update/{{ phrase.good_phrase_id }}/">
+              {{ phrase.title }}
+            </a>
+        </td></tr>
+        {% endfor %}
+      </table>
+    </p>
+    <a href="/register/">戻る</a>
+  </body>
+</html>
