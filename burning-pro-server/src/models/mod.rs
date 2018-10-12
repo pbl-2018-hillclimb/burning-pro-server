@@ -4,7 +4,9 @@ use chrono::NaiveDateTime;
 use schema::*;
 
 /// GoodPhrase tag.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable, Insertable,
+)]
 #[primary_key(good_phrase_tag_id)]
 pub struct GoodPhraseTag {
     /// Row ID.
@@ -21,7 +23,17 @@ pub struct GoodPhraseTag {
 
 /// GoodPhrase.
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Hash,
+    Serialize,
+    Associations,
+    Identifiable,
+    Queryable,
+    Insertable,
 )]
 #[belongs_to(Person)]
 #[primary_key(good_phrase_id)]
@@ -48,7 +60,17 @@ pub struct GoodPhrase {
 
 /// GoodPhrase and tag.
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Hash,
+    Serialize,
+    Associations,
+    Identifiable,
+    Queryable,
+    Insertable,
 )]
 #[belongs_to(GoodPhrase)]
 #[belongs_to(GoodPhraseTag)]
@@ -69,7 +91,17 @@ pub struct GoodPhraseAndTag {
 
 /// Person and URL.
 #[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Associations, Identifiable, Queryable,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Hash,
+    Serialize,
+    Associations,
+    Identifiable,
+    Queryable,
+    Insertable,
 )]
 #[belongs_to(Person)]
 #[table_name = "person_urls"]
@@ -88,7 +120,9 @@ pub struct PersonUrl {
 }
 
 /// Person.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable)]
+#[derive(
+    Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable, Insertable,
+)]
 #[primary_key(person_id)]
 pub struct Person {
     /// Row ID.
