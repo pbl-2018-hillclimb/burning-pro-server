@@ -10,7 +10,6 @@ use diesel::result::DatabaseErrorKind;
 
 use db::{DbExecutor, Error};
 use models;
-use schema;
 
 /// A message type to get table rows.
 ///
@@ -68,7 +67,7 @@ impl<T: 'static> Message for UpsertTableRows<T> {
 }
 
 macro_rules! impl_handler_for_model {
-    ($schema_name:ident, $model:ty) => {
+    ($model:ty) => {
         impl Handler<GetTableRows<$model>> for DbExecutor {
             type Result = <GetTableRows<$model> as Message>::Result;
 
@@ -77,8 +76,10 @@ macro_rules! impl_handler_for_model {
                 _msg: GetTableRows<$model>,
                 _ctx: &mut Self::Context,
             ) -> Self::Result {
+                use diesel::associations::HasTable;
+
                 let conn = &self.pool().get()?;
-                Ok(schema::$schema_name::table.load::<$model>(conn)?)
+                Ok(<$model>::table().load::<$model>(conn)?)
             }
         }
 
@@ -90,7 +91,7 @@ macro_rules! impl_handler_for_model {
                 msg: UpsertTableRows<$model>,
                 _ctx: &mut Self::Context,
             ) -> Self::Result {
-                use schema::$schema_name::table;
+                use diesel::associations::HasTable;
 
                 let conn = &self.pool().get()?;
 
@@ -104,7 +105,9 @@ macro_rules! impl_handler_for_model {
                         // See <https://github.com/diesel-rs/diesel/issues/1854>.
 
                         // First, try to insert the row.
-                        let insert_result = diesel::insert_into(table).values(row).execute(conn);
+                        let insert_result = diesel::insert_into(<$model>::table())
+                            .values(row)
+                            .execute(conn);
                         match insert_result {
                             Ok(_) => return Ok(()),
                             Err(diesel::result::Error::DatabaseError(
@@ -116,7 +119,7 @@ macro_rules! impl_handler_for_model {
 
                         // If insert fails, a row with the same id already exists.
                         // Then try to replace the row.
-                        diesel::replace_into(table)
+                        diesel::replace_into(<$model>::table())
                             .values(row)
                             .execute(conn)
                             .map(|_| ())
@@ -127,8 +130,8 @@ macro_rules! impl_handler_for_model {
     };
 }
 
-impl_handler_for_model!(good_phrase_tags, models::GoodPhraseTag);
-impl_handler_for_model!(good_phrases, models::GoodPhrase);
-impl_handler_for_model!(good_phrases_and_tags, models::GoodPhraseAndTag);
-impl_handler_for_model!(person_urls, models::PersonUrl);
-impl_handler_for_model!(persons, models::Person);
+impl_handler_for_model!(models::GoodPhraseTag);
+impl_handler_for_model!(models::GoodPhrase);
+impl_handler_for_model!(models::GoodPhraseAndTag);
+impl_handler_for_model!(models::PersonUrl);
+impl_handler_for_model!(models::Person);
