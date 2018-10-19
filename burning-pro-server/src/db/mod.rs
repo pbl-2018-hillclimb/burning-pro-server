@@ -8,11 +8,11 @@ use diesel::r2d2::{ConnectionManager, Pool};
 use r2d2;
 
 pub use self::get_good_phrases::GetGoodPhrases;
-pub use self::get_tags_for_phrase::GetTagsForGoodPhrase;
+pub use self::get_rows::*;
 
 pub mod admin;
 mod get_good_phrases;
-mod get_tags_for_phrase;
+mod get_rows;
 
 /// DB operation error.
 #[derive(Debug, Fail)]

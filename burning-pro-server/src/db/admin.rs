@@ -15,6 +15,8 @@ use models;
 ///
 /// This may have query parameters to limit or filter results (while it does not
 /// for now).
+///
+/// NOTE: Deprecated. Use `db::*Query` types instead.
 #[derive(Debug, Clone)]
 pub struct GetTableRows<T>(PhantomData<T>);
 
