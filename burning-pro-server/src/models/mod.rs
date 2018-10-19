@@ -3,6 +3,10 @@ use chrono::NaiveDateTime;
 
 use schema::*;
 
+pub use self::update::*;
+
+pub mod update;
+
 /// GoodPhrase tag.
 #[derive(
     Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Queryable, Insertable,
