@@ -13,6 +13,7 @@ pub use self::get_rows::*;
 pub mod admin;
 mod get_good_phrases;
 mod get_rows;
+pub mod upsert_entry;
 
 /// DB operation error.
 #[derive(Debug, Fail)]
