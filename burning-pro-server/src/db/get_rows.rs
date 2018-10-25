@@ -35,6 +35,8 @@ pub trait RowQuery {
 pub enum GoodPhraseTagQuery {
     /// Query all rows.
     All,
+    /// Query rows for the given tag id.
+    TagId(i32),
     /// Query rows for the given phrase id.
     PhraseId(i32),
 }
@@ -55,6 +57,9 @@ impl Handler<GoodPhraseTagQuery> for DbExecutor {
         let res = match msg {
             GoodPhraseTagQuery::All => {
                 GoodPhraseTagQuery::table().load::<models::GoodPhraseTag>(conn)?
+            }
+            GoodPhraseTagQuery::TagId(tag_id) => {
+                vec![GoodPhraseTagQuery::table().find(tag_id).first(conn)?]
             }
             GoodPhraseTagQuery::PhraseId(phrase_id) => schema::good_phrases_and_tags::table
                 .filter(schema::good_phrases_and_tags::columns::good_phrase_id.eq(phrase_id))
@@ -103,6 +108,8 @@ impl Handler<GoodPhraseQuery> for DbExecutor {
 pub enum PersonUrlQuery {
     /// Query all rows.
     All,
+    /// Query rows for the given person URL id.
+    PersonUrlId(i32),
     /// Query rows for the given person id.
     PersonId(i32),
 }
@@ -122,6 +129,9 @@ impl Handler<PersonUrlQuery> for DbExecutor {
         let conn = &self.pool().get()?;
         let res = match msg {
             PersonUrlQuery::All => PersonUrlQuery::table().load::<models::PersonUrl>(conn)?,
+            PersonUrlQuery::PersonUrlId(url_id) => {
+                vec![PersonUrlQuery::table().find(url_id).first(conn)?]
+            }
             PersonUrlQuery::PersonId(person_id) => PersonUrlQuery::table()
                 .filter(schema::person_urls::columns::person_id.eq(person_id))
                 .load::<models::PersonUrl>(conn)?,
