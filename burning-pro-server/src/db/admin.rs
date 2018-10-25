@@ -105,22 +105,12 @@ macro_rules! impl_handler_for_model {
                     .map(|row| {
                         // NOTE: SQLite backend does not support upsert.
                         // See <https://github.com/diesel-rs/diesel/issues/1854>.
-
-                        // First, try to insert the row.
-                        let insert_result = diesel::insert_into(<$model>::table())
-                            .values(row)
-                            .execute(conn);
-                        match insert_result {
-                            Ok(_) => return Ok(()),
-                            Err(diesel::result::Error::DatabaseError(
-                                DatabaseErrorKind::UniqueViolation,
-                                _,
-                            )) => {}
-                            Err(err) => return Err(err),
-                        }
-
-                        // If insert fails, a row with the same id already exists.
-                        // Then try to replace the row.
+                        // Use `replace_into` to do upsert with SQLite backend.
+                        //
+                        // > For PostgreSQL, see the `pg::upsert` module. For MySQL and SQLite,
+                        // > upsert is done via `REPLACE`. See `replace_into` for details.
+                        // >
+                        // > -- <http://diesel.rs/guides/all-about-inserts/#upsert>
                         diesel::replace_into(<$model>::table())
                             .values(row)
                             .execute(conn)
