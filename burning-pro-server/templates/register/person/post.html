@@ -17,7 +17,9 @@
       </p>
       <p>
         関連ページのURL:<br/>
-        {{ person.url }}<br/>
+        {% for url in person.url -%}
+          {{ url }}<br />
+        {% endfor -%}
       </p>
       <p>
         Twitterアカウント:<br/>

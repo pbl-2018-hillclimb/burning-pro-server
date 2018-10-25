@@ -19,13 +19,6 @@ use models;
 #[derive(Debug, Clone)]
 pub struct GetTableRows<T>(PhantomData<T>);
 
-impl<T> GetTableRows<T> {
-    /// Creates a new `GetTableRows`.
-    pub fn new() -> GetTableRows<T> {
-        GetTableRows(PhantomData)
-    }
-}
-
 impl<T: 'static> Message for GetTableRows<T> {
     type Result = Result<Vec<T>, Error>;
 }

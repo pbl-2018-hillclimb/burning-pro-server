@@ -18,9 +18,13 @@
                  value="{{ person.display_name }}"/><br/>
           関連ページのURL（カンマ区切りで複数指定）<br/>
           <textarea name="url" cols="50" rows="5" wrap="soft">
+{% set url_size = person_url | length -%}
 {% for url in person_url -%}
-{% if loop.index > 1 -%},{% endif -%}
+{% if loop.index == url_size -%}
 {{ url.url }}
+{% else -%}
+{{ url.url }},
+{% endif -%}
 {% endfor -%}
           </textarea><br/>
           Twitterアカウント（@は省略）<br/>

@@ -3,15 +3,14 @@
 use std::sync::Arc;
 
 use actix::Addr;
-use actix_web::{Error, AsyncResponder, FutureResponse, HttpResponse,
-                HttpRequest, Form, Path};
-use actix_web::error::{ErrorInternalServerError, ErrorBadRequest};
-use tera::Context;
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
+use actix_web::{AsyncResponder, Error, Form, FutureResponse, HttpRequest, HttpResponse, Path};
 use futures::future::Future;
+use tera::Context;
 
+use admin::{form, render};
 use app::AppState;
 use db::{upsert_entry, DbExecutor, GoodPhraseQuery, GoodPhraseTagQuery, PersonQuery};
-use admin::{form, render};
 
 /// Processes the request for phrase registration index.
 #[allow(unknown_lints, needless_pass_by_value)]
@@ -31,15 +30,13 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                 error!("`admin::phrase::index()`: {}", e);
                 Ok(HttpResponse::InternalServerError().into())
             }
-        })
-        .responder()
+        }).responder()
 }
 
 /// Prepare context for rendering phrase form.
-fn make_phrase_ctx(
-    db: &Addr<DbExecutor>
-) -> impl Future<Item = Context, Error = Error> {
-    let all_tag = db.send(GoodPhraseTagQuery::All)
+fn make_phrase_ctx(db: &Addr<DbExecutor>) -> impl Future<Item = Context, Error = Error> {
+    let all_tag = db
+        .send(GoodPhraseTagQuery::All)
         .from_err()
         .and_then(|res| match res {
             Ok(content) => Ok(content),
@@ -48,7 +45,8 @@ fn make_phrase_ctx(
                 Err(ErrorInternalServerError("DB error"))
             }
         });
-    let all_person = db.send(PersonQuery::All)
+    let all_person = db
+        .send(PersonQuery::All)
         .from_err()
         .and_then(|res| match res {
             Ok(content) => Ok(content),
@@ -57,13 +55,12 @@ fn make_phrase_ctx(
                 Err(ErrorInternalServerError("DB error"))
             }
         });
-    all_tag.join(all_person)
-        .map(|(all_tag, all_person)| {
-            let mut ctx = Context::new();
-            ctx.insert("all_tag", &all_tag);
-            ctx.insert("all_person", &all_person);
-            ctx
-        })
+    all_tag.join(all_person).map(|(all_tag, all_person)| {
+        let mut ctx = Context::new();
+        ctx.insert("all_tag", &all_tag);
+        ctx.insert("all_person", &all_person);
+        ctx
+    })
 }
 
 /// Processes the request for new phrase registration form.
@@ -79,28 +76,28 @@ pub fn new(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 
 /// Processes the request for phrase update form.
 #[allow(unknown_lints, needless_pass_by_value)]
-pub fn update(
-    path: Path<i32>, req: HttpRequest<AppState>
-) -> FutureResponse<HttpResponse> {
+pub fn update(path: Path<i32>, req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::phrase::update()`: {:?}", req);
     let phrase_id = path.into_inner();
     let db = req.state().db();
     let ctx = make_phrase_ctx(db);
-    let phrase = db.send(GoodPhraseQuery::PhraseId(phrase_id))
+    let phrase = db
+        .send(GoodPhraseQuery::PhraseId(phrase_id))
         .from_err()
         .and_then(|res| match res {
-            Ok(content) => if content.is_empty() {
+            Ok(mut content) => if content.is_empty() {
                 debug!("Phrase not found.");
                 Err(ErrorBadRequest("Phrase not found"))
             } else {
-                Ok(content[0].to_owned())
+                Ok(content.swap_remove(0))
             },
             Err(e) => {
                 error!("`admin::phrase::update()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
         });
-    let phrase_tag = db.send(GoodPhraseTagQuery::PhraseId(phrase_id))
+    let phrase_tag = db
+        .send(GoodPhraseTagQuery::PhraseId(phrase_id))
         .from_err()
         .and_then(|res| match res {
             Ok(content) => Ok(content),
@@ -115,25 +112,60 @@ pub fn update(
             ctx.insert("phrase", &phrase);
             ctx.insert("phrase_tag", &phrase_tag);
             ctx
-        })
-        .map(move |ctx| render(&template, &ctx, "register/phrase/update.html"))
+        }).map(move |ctx| render(&template, &ctx, "register/phrase/update.html"))
         .responder()
 }
 
 /// Processes the phrase update query.
 #[allow(unknown_lints, needless_pass_by_value)]
-pub fn post(
-    req: HttpRequest<AppState>, form: Form<form::Phrase>
-) -> HttpResponse {
+pub fn post(req: HttpRequest<AppState>, form: Form<form::Phrase>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::phrase::post()`: {:?}", req);
-    
-    let form_content = &form.into_inner();
-    
+
+    let mut form_content = form.into_inner();
+    form_content.phrase = form_content.phrase.trim().to_string();
     debug!("receive form:\n{:#?}", &form_content);
-    // TODO: register phrase
-    
-    let template = req.state().template();
-    let mut ctx = Context::new();
-    ctx.insert("phrase", &form_content);    
-    render(template, &ctx, "register/phrase/post.html")
+    let upsert_msg = match form_content.to_owned() {
+        form::Phrase {
+            good_phrase_id,
+            title,
+            phrase,
+            person_id,
+            url,
+            deleted,
+            published_at,
+            extra,
+        } => {
+            let tag_ids = extra
+                .iter()
+                .filter(|(key, _)| (key.len() >= 5) & (&key[..5] == "tags_"))
+                .filter_map(|(_, value)| value.parse::<i32>().ok())
+                .collect::<Vec<_>>();
+            upsert_entry::GoodPhrase {
+                good_phrase_id,
+                title,
+                phrase,
+                person_id,
+                url,
+                deleted,
+                published_at,
+                tag_ids,
+            }
+        }
+    };
+
+    let db = req.state().db();
+    let template = Arc::clone(req.state().template());
+    db.send(upsert_msg)
+        .from_err()
+        .and_then(move |res| match res {
+            Ok(_) => {
+                let mut ctx = Context::new();
+                ctx.insert("phrase", &form_content);
+                Ok(render(&template, &ctx, "register/phrase/post.html"))
+            }
+            Err(e) => {
+                error!("`admin::phrase::update()`: {}", e);
+                Err(ErrorInternalServerError("DB error"))
+            }
+        }).responder()
 }

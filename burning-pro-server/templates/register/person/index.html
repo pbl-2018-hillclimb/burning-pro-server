@@ -12,13 +12,13 @@
     <h3>更新</h3>
     <p>
       <table>
-        {% for person in rows %}
+        {% for person in rows -%}
         <tr><td>
             <a href="/register/person/update/{{ person.person_id }}/">
               {{ person.display_name }}
             </a>
         </td></tr>
-        {% endfor %}
+        {% endfor -%}
       </table>
     </p>
     <a href="/register/">戻る</a>

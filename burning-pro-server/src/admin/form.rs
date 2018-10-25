@@ -1,8 +1,10 @@
 //! Form types.
 
 use std::collections::HashMap;
+use std::fmt;
 
-use chrono::{DateTime, Local};
+use chrono::{DateTime, FixedOffset, Local, TimeZone};
+use serde::de;
 
 /// A phrase.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,17 +18,19 @@ pub struct Phrase {
     /// Author's person id.
     pub person_id: i32,
     /// URL of the phrase if it is posted or published to the WWW.
-    #[serde(with = "optstr_fmt")]
+    #[serde(deserialize_with = "deserialize_optstr")]
     pub url: Option<String>,
     /// Whether the source web page is deleted or not.
     pub deleted: bool,
     /// Datetime when the phrase is published.
-    #[serde(with = "optdate_fmt")]
+    #[serde(deserialize_with = "deserialize_optdate")]
     pub published_at: Option<DateTime<Local>>,
     /// Extra form field.
-    /// Contains selected tag id.
+    ///
+    /// Contains selected tag_ids, map person_id to display_name, and
+    /// mapping of persons / tags from indices to names.
     #[serde(flatten)]
-    pub extra: HashMap<String, String>
+    pub extra: HashMap<String, String>,
 }
 
 /// A person.
@@ -35,16 +39,17 @@ pub struct Person {
     /// Row ID (`None` for new entry)
     pub person_id: Option<i32>,
     /// Real name.
-    #[serde(with = "optstr_fmt")]
+    #[serde(deserialize_with = "deserialize_optstr")]
     pub real_name: Option<String>,
     /// Display name.
-    #[serde(with = "optstr_fmt")]
+    #[serde(deserialize_with = "deserialize_optstr")]
     pub display_name: Option<String>,
     /// URLs of web pages of the person.
-    #[serde(with = "strvec_fmt")]
+    #[serde(deserialize_with = "deserialize_strvec")]
+    //#[serde(with = "strvec_fmt")]
     pub url: Vec<String>,
     /// Twitter account.
-    #[serde(with = "optstr_fmt")]
+    #[serde(deserialize_with = "deserialize_optstr")]
     pub twitter: Option<String>,
 }
 
@@ -56,115 +61,108 @@ pub struct Tag {
     /// Name.
     pub name: String,
     /// Description of tag.
-    #[serde(with = "optstr_fmt")]
+    #[serde(deserialize_with = "deserialize_optstr")]
     pub description: Option<String>,
 }
 
-/// Custom Serde format for `Vec<String>`.
-/// Convert comma-separated string <-> `Vec<String>`.
-mod strvec_fmt {
-    use serde::{Deserialize, Serializer, Deserializer};
-
-    pub fn serialize<S>(
-        str_vec: &Vec<String>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = format!("{}", str_vec.join(","));
-        serializer.serialize_str(&s)
-    }
-    
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<Vec<String>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        if s.is_empty() {
-            Ok(Vec::new())
-        } else {
-            Ok(s.split(',')
-               .map(|s| s.trim().to_string())
-               .collect::<Vec<_>>())
-        }
-    }
-}
-
-/// Custom Serde format for `Option<String>`.
-/// Convert `""` <-> `None`, `$non_empty` <-> `Some($non_empty)`.
+/// Custom deserializer for `Option<String>`.
+///
+/// Convert `""` -> `None`, `$non_empty` -> `Some($non_empty)`.
 /// (By default, empty form values are deserialized to `Some("")`.)
-mod optstr_fmt {
-    use serde::{Deserialize, Serializer, Deserializer};
+fn deserialize_strvec<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    struct StrvecVisitor;
 
-    pub fn serialize<S>(
-        optdate: &Option<String>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match optdate {
-            Some(val) => serializer.serialize_str(val),
-            None => serializer.serialize_none()
+    impl<'de> de::Visitor<'de> for StrvecVisitor {
+        type Value = Vec<String>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a comma-separated string")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            let s = v.to_string();
+            if s.is_empty() {
+                Ok(Vec::new())
+            } else {
+                Ok(s.split(',')
+                    .map(|s| s.trim().to_string())
+                    .collect::<Vec<_>>())
+            }
         }
     }
-    
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<Option<String>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        if s.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(s))
-        }
-    }
+
+    deserializer.deserialize_any(StrvecVisitor)
 }
 
-/// Custom Serde format for `Option<DateTime<Local>>`
-/// Convert YYYY-mm-ddTHH:MM format(maybe empty) <-> `Option<DateTime<Local>>`
-mod optdate_fmt {
-    use serde::{Deserialize, Serializer, Deserializer};
-    use serde::de::Error;
-    use chrono::{DateTime, Local, FixedOffset, TimeZone};
+/// Custom deserializer for `Option<String>`.
+///
+/// Convert `""` -> `None`, `$non_empty` -> `Some($non_empty)`.
+/// (By default, empty form values are deserialized to `Some("")`.)
+fn deserialize_optstr<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    struct OptstrVisitor;
 
-    const FORMAT: &'static str = "%Y-%m-%dT%H:%M";
+    impl<'de> de::Visitor<'de> for OptstrVisitor {
+        type Value = Option<String>;
 
-    pub fn serialize<S>(
-        optdate: &Option<DateTime<Local>>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = match optdate {
-            Some(date) => format!("{}", date.format(FORMAT)),
-            None => String::new()
-        };
-        serializer.serialize_str(&s)
-    }
-    
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<Option<DateTime<Local>>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        if s.is_empty() {
-            Ok(None)
-        } else {
-            let tz_offset = FixedOffset::east(9 * 60 * 60);
-            Local::from_offset(&tz_offset)
-                .datetime_from_str(&s, FORMAT)
-                .map(|dt| Some(dt))
-                .map_err(Error::custom)
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a string")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            if v.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(v.to_string()))
+            }
         }
     }
+
+    deserializer.deserialize_any(OptstrVisitor)
+}
+
+/// Custom deserializer for `Option<DateTime<Local>>`
+///
+/// Convert YYYY-MM-DDThh:mm:ss format(maybe empty) -> `Option<DateTime<Local>>`
+fn deserialize_optdate<'de, D>(deserializer: D) -> Result<Option<DateTime<Local>>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    struct OptdateVisitor;
+
+    impl<'de> de::Visitor<'de> for OptdateVisitor {
+        type Value = Option<DateTime<Local>>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a string `YYYY-MM-DDThh:mm:ss`")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            if v.is_empty() {
+                Ok(None)
+            } else {
+                let tz_offset = FixedOffset::east(9 * 60 * 60);
+                Local::from_offset(&tz_offset)
+                    .datetime_from_str(v, "%Y-%m-%dT%H:%M:%S")
+                    .map(|dt| Some(dt))
+                    .map_err(de::Error::custom)
+            }
+        }
+    }
+
+    deserializer.deserialize_any(OptdateVisitor)
 }

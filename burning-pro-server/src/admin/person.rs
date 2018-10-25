@@ -2,15 +2,14 @@
 
 use std::sync::Arc;
 
-use actix_web::{AsyncResponder, FutureResponse, HttpResponse,
-                HttpRequest, Form, Path};
-use actix_web::error::{ErrorInternalServerError, ErrorBadRequest};
-use tera::Context;
+use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
+use actix_web::{AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path};
 use futures::future::Future;
+use tera::Context;
 
+use admin::{form, render};
 use app::AppState;
 use db::{upsert_entry, PersonQuery, PersonUrlQuery};
-use admin::{form, render};
 
 /// Processes the request for person registration index.
 #[allow(unknown_lints, needless_pass_by_value)]
@@ -30,8 +29,7 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
                 error!("`db_update::person_index()`: {}", e);
                 Err(ErrorInternalServerError("DB Error"))
             }
-        })
-        .responder()
+        }).responder()
 }
 
 /// Processes the request for new person registration form.
@@ -44,27 +42,27 @@ pub fn new(req: HttpRequest<AppState>) -> HttpResponse {
 
 /// Processes the request for person update form.
 #[allow(unknown_lints, needless_pass_by_value)]
-pub fn update(
-    path: Path<i32>, req: HttpRequest<AppState>
-) -> FutureResponse<HttpResponse> {
+pub fn update(path: Path<i32>, req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::person::update()`: {:?}", req);
     let person_id = path.into_inner();
     let db = req.state().db();
-    let person = db.send(PersonQuery::PersonId(person_id))
+    let person = db
+        .send(PersonQuery::PersonId(person_id))
         .from_err()
         .and_then(|res| match res {
-            Ok(content) => if content.is_empty() {
+            Ok(mut content) => if content.is_empty() {
                 debug!("Person not found.");
                 Err(ErrorBadRequest("Person not found"))
             } else {
-                Ok(content[0].to_owned())
+                Ok(content.swap_remove(0))
             },
             Err(e) => {
                 error!("`admin::person::update()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
         });
-    let person_url = db.send(PersonUrlQuery::PersonId(person_id))
+    let person_url = db
+        .send(PersonUrlQuery::PersonId(person_id))
         .from_err()
         .and_then(|res| match res {
             Ok(content) => Ok(content),
@@ -74,31 +72,51 @@ pub fn update(
             }
         });
     let template = Arc::clone(req.state().template());
-    person.join(person_url)
+    person
+        .join(person_url)
         .map(|(person, person_url)| {
             let mut ctx = Context::new();
             ctx.insert("person", &person);
             ctx.insert("person_url", &person_url);
             ctx
-        })
-        .map(move |ctx| render(&template, &ctx, "register/person/update.html"))
+        }).map(move |ctx| render(&template, &ctx, "register/person/update.html"))
         .responder()
 }
 
 /// Processes the person update query.
 #[allow(unknown_lints, needless_pass_by_value)]
-pub fn post(
-    req: HttpRequest<AppState>, form: Form<form::Person>
-) -> HttpResponse {
+pub fn post(req: HttpRequest<AppState>, form: Form<form::Person>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::person::post()`: {:?}", req);
-    
-    let form_content = &form.into_inner();
-    
+    let form_content = form.into_inner();
     debug!("receive form:\n{:#?}", &form_content);
-    // TODO: register person
-    
-    let template = req.state().template();
-    let mut ctx = Context::new();
-    ctx.insert("person", &form_content);    
-    render(template, &ctx, "register/person/post.html")
+    let upsert_msg = match form_content.to_owned() {
+        form::Person {
+            person_id,
+            real_name,
+            display_name,
+            url,
+            twitter,
+        } => upsert_entry::Person {
+            person_id,
+            real_name,
+            display_name,
+            url,
+            twitter,
+        },
+    };
+    let db = req.state().db();
+    let template = Arc::clone(req.state().template());
+    db.send(upsert_msg)
+        .from_err()
+        .and_then(move |res| match res {
+            Ok(_) => {
+                let mut ctx = Context::new();
+                ctx.insert("person", &form_content);
+                Ok(render(&template, &ctx, "register/person/post.html"))
+            }
+            Err(e) => {
+                error!("`admin::person::update()`: {}", e);
+                Err(ErrorInternalServerError("DB error"))
+            }
+        }).responder()
 }

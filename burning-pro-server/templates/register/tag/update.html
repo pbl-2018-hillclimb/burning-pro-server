@@ -14,11 +14,9 @@
           <input type="text" name="name"
                  value="{{ tag.name }}"required /><br/>
           タグの詳細</br>
-          <textarea name="description" cols="50" rows="5" wrap="soft">
-{{ tag.description }}
-          </textarea><br/>
-
-          <input type="hidden" name=".good_phrase_tag_id"
+          <textarea name="description" cols="50" rows="5" wrap="soft">{{ tag.description }}</textarea>
+          <br/>
+          <input type="hidden" name="good_phrase_tag_id"
                  value="{{ tag.good_phrase_tag_id }}" />
           <input type="submit">
         </p>

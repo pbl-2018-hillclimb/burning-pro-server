@@ -17,8 +17,8 @@
       </p>
       <p>
         発言者:<br/>
-        {%- set person_id_str = phrase.person_id | as_str %}
-        {%- set person_field = "person_name_" ~ person_id_str %}
+        {% set person_id_str = phrase.person_id | as_str -%}
+        {% set person_field = "person_name_" ~ person_id_str -%}
         {{ phrase[person_field] }}<br/>
       </p>
       <p>
@@ -35,13 +35,13 @@
       </p>
       <p>
         タグ:<br/>
-        {% for key, value in phrase %}
-          {% if key is starting_with("tags_") %}
-            {%- set tag_id_str = value | as_str %}
-            {%- set person_field = "tag_name_" ~ person_id_str %}
-            {{ phrase[person_field] }}<br/>
-          {% endif%}
-        {% endfor %}
+        {% for key, value in phrase -%}
+          {% if key is starting_with("tags_") -%}
+            {% set tag_id_str = value | as_str -%}
+            {% set tag_field = "tag_name_" ~ tag_id_str -%}
+            {{ phrase[tag_field] }}<br/>
+          {% endif -%}
+        {% endfor -%}
       </p>
     </p>
     <a href="/register/">トップへ</a>

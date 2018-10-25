@@ -20,9 +20,9 @@ extern crate serde_json;
 #[macro_use]
 extern crate tera;
 
+pub mod admin;
 pub mod app;
 pub mod db;
 pub mod good_phrase;
-pub mod admin;
 pub(crate) mod models;
 mod schema;

@@ -12,13 +12,13 @@
     <h3>更新</h3>
     <p>
       <table>
-        {% for phrase in rows %}
+        {% for phrase in rows -%}
         <tr><td>
             <a href="/register/phrase/update/{{ phrase.good_phrase_id }}/">
               {{ phrase.title }}
             </a>
         </td></tr>
-        {% endfor %}
+        {% endfor -%}
       </table>
     </p>
     <a href="/register/">戻る</a>
