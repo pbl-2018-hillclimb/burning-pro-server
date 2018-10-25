@@ -241,3 +241,54 @@ pub struct GoodPhraseTag {
     /// Description of tag.
     pub description: Option<String>,
 }
+
+impl Message for GoodPhraseTag {
+    type Result = Result<(), Error>;
+}
+
+impl Handler<GoodPhraseTag> for DbExecutor {
+    type Result = <GoodPhraseTag as Message>::Result;
+
+    fn handle(&mut self, msg: GoodPhraseTag, _ctx: &mut Self::Context) -> Self::Result {
+        use schema::good_phrase_tags::{table, columns};
+
+        let conn = &self.pool().get()?;
+
+        let GoodPhraseTag {
+            good_phrase_tag_id,
+            name,
+            description,
+        } = msg;
+
+        // Use transaction to get correct `last_insert_rowid` result.
+        match good_phrase_tag_id {
+            Some(good_phrase_tag_id) => {
+                // Update.
+                diesel::update(table.filter(columns::good_phrase_tag_id.eq(good_phrase_tag_id)))
+                    .set((
+                        columns::name.eq(name),
+                        columns::description.eq(description),
+                    ))
+                    .execute(conn)?;
+            },
+            None => {
+                let now_utc = Local::now().naive_utc();
+                let new_row = models::NewGoodPhraseTag {
+                    good_phrase_tag_id: None,
+                    created_at: &now_utc,
+                    modified_at: &now_utc,
+                    name: &name,
+                    description: description.as_ref().map(AsRef::as_ref),
+                };
+                // NOTE: SQLite backend does not support "returning clause".
+                // See <https://docs.diesel.rs/diesel/backend/trait.SupportsReturningClause.html>.
+                // Although you can retrieve last inserted row ID:
+                // See <https://github.com/diesel-rs/diesel/issues/771>.
+                diesel::insert_into(table)
+                    .values(new_row)
+                    .execute(conn)?;
+            },
+        }
+        Ok(())
+    }
+}
