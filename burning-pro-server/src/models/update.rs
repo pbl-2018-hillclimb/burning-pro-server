@@ -69,7 +69,7 @@ pub struct NewGoodPhraseAndTag<'a> {
 )]
 #[table_name = "person_urls"]
 #[primary_key(person_url_id)]
-pub struct PersonUrl<'a> {
+pub struct NewPersonUrl<'a> {
     /// Row ID.
     pub person_url_id: Option<i32>,
     /// UTC datetime the row is created at.
