@@ -143,6 +143,94 @@ pub struct Person {
     pub twitter: Option<String>,
 }
 
+impl Message for Person {
+    type Result = Result<(), Error>;
+}
+
+impl Handler<Person> for DbExecutor {
+    type Result = <Person as Message>::Result;
+
+    fn handle(&mut self, msg: Person, _ctx: &mut Self::Context) -> Self::Result {
+        use schema::persons::columns;
+
+        let conn = &self.pool().get()?;
+        let now_utc = Local::now().naive_utc();
+
+        let Person {
+            person_id,
+            real_name,
+            display_name,
+            url: urls,
+            twitter,
+        } = msg;
+
+        // Use transaction to get correct `last_insert_rowid` result.
+        conn.transaction::<_, Error, _>(|| {
+            let person_id = match person_id {
+                Some(person_id) => {
+                    // Update.
+                    diesel::update(schema::persons::table.filter(columns::person_id.eq(person_id)))
+                        .set((
+                            columns::modified_at.eq(now_utc),
+                            columns::real_name.eq(real_name),
+                            columns::display_name.eq(display_name),
+                            columns::twitter.eq(twitter),
+                        ))
+                        .execute(conn)?;
+                    person_id
+                },
+                None => {
+                    let new_row = models::NewPerson {
+                        person_id: None,
+                        created_at: &now_utc,
+                        modified_at: &now_utc,
+                        real_name: real_name.as_ref().map(AsRef::as_ref),
+                        display_name: display_name.as_ref().map(AsRef::as_ref),
+                        twitter: twitter.as_ref().map(AsRef::as_ref),
+                    };
+                    // NOTE: SQLite backend does not support "returning clause".
+                    // See <https://docs.diesel.rs/diesel/backend/trait.SupportsReturningClause.html>.
+                    // Although you can retrieve last inserted row ID:
+                    // See <https://github.com/diesel-rs/diesel/issues/771>.
+                    diesel::insert_into(schema::persons::table)
+                        .values(new_row)
+                        .execute(conn)?;
+                    diesel::select(last_insert_rowid).execute(conn)? as i32
+                },
+            };
+
+            // Update URLs.
+            let current_urls = schema::person_urls::table
+                .filter(schema::person_urls::columns::person_id.eq(person_id))
+                .select((
+                    schema::person_urls::columns::person_url_id,
+                    schema::person_urls::columns::url,
+                ))
+                .load::<(i32, String)>(conn)?;
+
+            for (delete_id, _) in current_urls.iter().filter(|(_, url)| !urls.contains(url)) {
+                diesel::delete(
+                    schema::person_urls::table
+                        .filter(schema::person_urls::columns::person_url_id.eq(delete_id))
+                ).execute(conn)?;
+            }
+            for url in urls.iter().filter(|url| !current_urls.iter().any(|(_, v)| v == *url)) {
+                let row = models::NewPersonUrl {
+                    person_url_id: None,
+                    created_at: &now_utc,
+                    modified_at: &now_utc,
+                    person_id: person_id,
+                    url: url,
+                };
+                diesel::insert_into(schema::person_urls::table)
+                    .values(row)
+                    .execute(conn)?;
+            }
+            Ok(())
+        })
+    }
+}
+
 /// A tag.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct GoodPhraseTag {
