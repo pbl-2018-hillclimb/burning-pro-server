@@ -22,8 +22,13 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         .and_then(move |res| match res {
             Ok(contents) => {
                 let mut ctx = Context::new();
-                ctx.insert("rows", &contents);
-                Ok(render(&template, &ctx, "register/tag/index.html"))
+                ctx.insert("table_name", "タグ");
+                let rows = contents
+                    .into_iter()
+                    .map(|row| (row.good_phrase_tag_id, row.name))
+                    .collect::<Vec<_>>();
+                ctx.insert("rows", &rows);
+                Ok(render(&template, &ctx, "register/list.html"))
             }
             Err(e) => {
                 error!("`admin::tag::index()`: {}", e);

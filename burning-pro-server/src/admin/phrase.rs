@@ -23,8 +23,13 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         .and_then(move |res| match res {
             Ok(contents) => {
                 let mut ctx = Context::new();
-                ctx.insert("rows", &contents);
-                Ok(render(&template, &ctx, "register/phrase/index.html"))
+                ctx.insert("table_name", "発言");
+                let rows = contents
+                    .into_iter()
+                    .map(|row| (row.good_phrase_id, row.title))
+                    .collect::<Vec<_>>();
+                ctx.insert("rows", &rows);
+                Ok(render(&template, &ctx, "register/list.html"))
             }
             Err(e) => {
                 error!("`admin::phrase::index()`: {}", e);

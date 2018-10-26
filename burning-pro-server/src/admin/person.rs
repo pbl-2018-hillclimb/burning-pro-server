@@ -22,8 +22,13 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         .and_then(move |res| match res {
             Ok(contents) => {
                 let mut ctx = Context::new();
-                ctx.insert("rows", &contents);
-                Ok(render(&template, &ctx, "register/person/index.html"))
+                ctx.insert("table_name", "発言者");
+                let rows = contents
+                    .into_iter()
+                    .map(|row| (row.person_id, row.display_name))
+                    .collect::<Vec<_>>();
+                ctx.insert("rows", &rows);
+                Ok(render(&template, &ctx, "register/list.html"))
             }
             Err(e) => {
                 error!("`db_update::person_index()`: {}", e);
