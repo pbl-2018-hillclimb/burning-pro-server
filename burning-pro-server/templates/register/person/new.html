@@ -6,23 +6,29 @@
   </head>
   <body>
     <h1>発言者の登録</h1>
-    <p>
-      <form action="/register/person/post/" method="post">
-        <p>*印は必須フィールドです</p>
-        <p>
-          実名<br/>
-          <input type="text" name="real_name" /><br/>
-          表示名<br/>
-          <input type="text" name="display_name" /><br/>
-          関連ページのURL（カンマ区切りで複数指定）<br/>
-          <textarea name="url" cols="50" rows="5" wrap="soft"></textarea><br/>
-          Twitterアカウント（@は省略）<br/>
-          <input type="text" name="twitter" /><br/>
-          <input type="submit">
-        </p>
-      </form>
-    </p>
-    <a href="/register/person/">戻る</a>
+    <form action="../post/" method="post">
+      <p>*印は必須フィールドです</p>
+      <dl>
+        <dt><label for="real_name">実名</label></dt>
+        <dd>
+          <input id="real_name" name="real_name" type="text" />
+        </dd>
+        <dt><label for="display_name">*表示名</label></dt>
+        <dd>
+          <input id="display_name" name="display_name" type="text" required />
+        </dd>
+        <dt><label for="url">関連ページのURL（カンマ区切りで複数指定）</label></dt>
+        <dd>
+          <textarea id="url" name="url" cols="50" rows="5" wrap="soft"></textarea>
+        </dd>
+        <dt><label for="twitter">Twitterアカウント（@は省略）</label></dt>
+        <dd>
+          <input id="twitter" name="twitter" type="text" pattern="[a-zA-z0-9_]*" />
+        </dd>
+      </dl>
+      <button type="submit">送信</button>
+    </form>
+    <a href="..">戻る</a>
   </body>
 </html>
 

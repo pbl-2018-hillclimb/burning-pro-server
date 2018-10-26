@@ -6,51 +6,68 @@
   </head>
   <body>
     <h1>†いい発言†の登録</h1>
-    <p>
-      <form action="/register/phrase/post/" method="post">
-        <p>*印は必須フィールドです</p>
-        <p>
-          *タイトル<br/>
-          <input type="text" name="title" required /><br/>
-          *発言<br/>
-          <textarea name="phrase" cols="50" rows="5" wrap="soft"></textarea><br/>
-          *発言者<br/>
-          <select name="person_id" required>
-            <option value=""></option>
+    <form action="../post/" method="post">
+      <p>*印は必須フィールドです</p>
+      <dl>
+        <dt><label for="title">*タイトル</label></dt>
+        <dd>
+          <input id="title" type="text" name="title" required />
+        </dd>
+        <dt><label for="phrase">*発言</label></dt>
+        <dd>
+          <textarea id="phrase" name="phrase" cols="50" rows="5" wrap="soft" required></textarea>
+        </dd>
+        <dt><label for="person_id">*発言者</label></dt>
+        <dd>
+          <select id="person_id" name="person_id" required>
+            <option value="">--発言者を選択してください--</option>
             {% for person in all_person -%}
               <option value="{{ person.person_id }}">
                 {{ person.display_name }}
               </option>
             {% endfor -%}
-          </select></br>
-          元ネタURL<br/>
-          <input type="text" name="url" /><br/>
-          *元ネタ削除済み?<br/>
-          <input type="radio" name="deleted" value="true"/> Yes
-          <input type="radio" name="deleted" value="false" checked="checked" /> No
-          <br/>
-          元ネタ投稿日時（YYYY-MM-DDThh:mm:ssで入力）<br/>
-          <input type="text" name="published_at" /><br/>
-          タグ<br/>
-          {% for tag in all_tag -%}
-            {{ tag.name }}
-            <input type="checkbox" name="tags_{{ tag.good_phrase_tag_id }}"
-                   value="{{ tag.good_phrase_tag_id }}" /> <br/>
-          {% endfor -%}
-            
-          {% for person in all_person -%}
-            <input type="hidden" name="person_name_{{ person.person_id }}"
-                   value="{{ person.display_name }}" />
-          {% endfor -%}
-          {% for tag in all_tag -%}
-            <input type="hidden" name="tag_name_{{ tag.good_phrase_tag_id }}"
-                   value="{{ tag.name }}" />
-          {% endfor -%}
-          <input type="submit">
-        </p>
-      </form>
-    </p>
-    <a href="/register/phrase/">戻る</a>
+          </select>
+        </dd>
+        <dt><label for="url">元ネタURL</label></dt>
+        <dd>
+          <input id="url" name="url" type="text" />
+        </dd>
+        <dt>*元ネタ削除済み？</dt>
+        <dd>
+          <div>
+            <input id="deleted_true" name="deleted" type="radio" value="true"/>
+            <label for="deleted_true">Yes</label>
+          </div>
+          <div>
+            <input id="deleted_false" name="deleted" type="radio" value="false" checked="checked" />
+            <label for="deleted_false">No または不明</label>
+          </div>
+        </dd>
+        <dt><label for="published_at">元ネタ投稿日時（<code>YYYY-MM-DDThh:mm:ss</code> で入力）</label></dt>
+        <dd>
+          <input id="published_at" name="published_at" type="text" />
+        </dd>
+        <dt>タグ</dt>
+        <dd>
+          <ul>
+            {% for tag in all_tag -%}
+              <li>
+                <input name="tags_{{ tag.good_phrase_tag_id }}" type="checkbox" value="{{ tag.good_phrase_tag_id }}" />
+                <label for="tags_{{ tag.good_phrase_tag_id }}">{{ tag.name }}</label>
+              </li>
+            {% endfor -%}
+          </ul>
+        </dd>
+      </dl>
+      {% for person in all_person -%}
+        <input name="person_name_{{ person.person_id }}" type="hidden" value="{{ person.display_name }}" />
+      {% endfor -%}
+      {% for tag in all_tag -%}
+        <input name="tag_name_{{ tag.good_phrase_tag_id }}" type="hidden" value="{{ tag.name }}" />
+      {% endfor -%}
+      <button type="submit">送信</button>
+    </form>
+    <a href="..">戻る</a>
   </body>
 </html>
 
