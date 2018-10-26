@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>発言更新完了</title>
+  </head>
+  <body>
+    <h3>以下の内容で発言情報を更新しました。</h3>
+    <p>
+      <p>
+        タイトル:<br/>
+        {{ phrase.title }}<br/>
+      </p>
+      <p>
+        発言:<br/>
+        {{ phrase.phrase }}<br/>
+      </p>
+      <p>
+        発言者:<br/>
+        {% set person_id_str = phrase.person_id | as_str -%}
+        {% set person_field = "person_name_" ~ person_id_str -%}
+        {{ phrase[person_field] }}<br/>
+      </p>
+      <p>
+        元ネタURL:<br/>
+        {{ phrase.url }}<br/>
+      </p>
+      <p>
+        元ネタ削除済み?:<br/>
+        {{ phrase.deleted }}<br/>
+      </p>
+      <p>
+        元ネタ投稿日時:<br/>
+        {{ phrase.published_at }}<br/>
+      </p>
+      <p>
+        タグ:<br/>
+        {% for key, value in phrase -%}
+          {% if key is starting_with("tags_") -%}
+            {% set tag_id_str = value | as_str -%}
+            {% set tag_field = "tag_name_" ~ tag_id_str -%}
+            {{ phrase[tag_field] }}<br/>
+          {% endif -%}
+        {% endfor -%}
+      </p>
+    </p>
+    <a href="/register/">トップへ</a>
+  </body>
+</html>
+

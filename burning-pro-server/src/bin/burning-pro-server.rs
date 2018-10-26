@@ -3,6 +3,7 @@
 extern crate burning_pro_server;
 
 use burning_pro_server::app::{AppState, AppStateBuilder};
+use burning_pro_server::{admin, good_phrase};
 
 extern crate actix;
 extern crate actix_web;
@@ -14,7 +15,7 @@ extern crate pretty_env_logger;
 use std::env;
 
 use actix_web::middleware::Logger;
-use actix_web::{server, App, HttpRequest};
+use actix_web::{http, server, App, HttpRequest};
 
 /// Setup global logger.
 fn setup_logger() {
@@ -39,6 +40,22 @@ fn fire(req: HttpRequest<AppState>) -> &'static str {
     debug!("request for `fire()`: {:?}", req);
     // Fire.
     "\u{1F525}"
+}
+
+macro_rules! regist_form_handler {
+    ($root:path, $new:path, $update:path, $post:path) => {
+        |scope| {
+            scope
+                .resource("/", |r| r.with($root))
+                .resource("/new/", |r| r.with($new))
+                .resource("/update/{id}/", |r| r.with($update))
+                .resource("/post/", |r| {
+                    r.method(http::Method::POST).with_config($post, |(_, cfg)| {
+                        cfg.error_handler(admin::post_err_handler);
+                    })
+                })
+        }
+    };
 }
 
 fn main() {
@@ -78,8 +95,35 @@ fn main() {
         App::with_state(app_state.clone())
             .middleware(Logger::default())
             .resource("/", |r| r.with(fire))
-            .resource("/good_phrases/", |r| {
-                r.with(burning_pro_server::good_phrase::index)
+            .resource("/good_phrases/", |r| r.with(good_phrase::index))
+            .scope("/register", |scope| {
+                scope
+                    .resource("/", |r| r.with(admin::index))
+                    .nested(
+                        "/phrase",
+                        regist_form_handler!(
+                            admin::phrase::index,
+                            admin::phrase::new,
+                            admin::phrase::update,
+                            admin::phrase::post
+                        ),
+                    ).nested(
+                        "/tag",
+                        regist_form_handler!(
+                            admin::tag::index,
+                            admin::tag::new,
+                            admin::tag::update,
+                            admin::tag::post
+                        ),
+                    ).nested(
+                        "/person",
+                        regist_form_handler!(
+                            admin::person::index,
+                            admin::person::new,
+                            admin::person::update,
+                            admin::person::post
+                        ),
+                    )
             })
     }).bind(listen)
     .unwrap_or_else(|e| {

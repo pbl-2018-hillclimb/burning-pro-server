@@ -1,11 +1,13 @@
 //! Server app state.
 
 use std::error;
+use std::sync::Arc;
 
 use actix::prelude::*;
 use diesel::prelude::*;
 use diesel::r2d2::ConnectionManager;
 use r2d2;
+use tera::Tera;
 
 use db::DbExecutor;
 
@@ -14,12 +16,19 @@ use db::DbExecutor;
 pub struct AppState {
     /// Address of DB executor actor.
     db: Addr<DbExecutor>,
+    /// tera(template engine) template.
+    template: Arc<Tera>,
 }
 
 impl AppState {
     /// Returns an address for DB executor actor.
     pub fn db(&self) -> &Addr<DbExecutor> {
         &self.db
+    }
+
+    /// Returns a tera template.
+    pub fn template(&self) -> &Arc<Tera> {
+        &self.template
     }
 }
 
@@ -69,6 +78,10 @@ impl AppStateBuilder {
             let pool = r2d2::Pool::builder().build(manager)?;
             SyncArbiter::start(3, move || DbExecutor::new(pool.clone()))
         };
-        Ok(AppState { db })
+        let template = {
+            let glob = concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*");
+            Arc::new(compile_templates!(glob))
+        };
+        Ok(AppState { db, template })
     }
 }
