@@ -6,7 +6,6 @@ use std::marker::PhantomData;
 use actix::prelude::*;
 use diesel;
 use diesel::prelude::*;
-use diesel::result::DatabaseErrorKind;
 
 use db::{DbExecutor, Error};
 use models;
