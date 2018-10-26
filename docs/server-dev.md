@@ -100,13 +100,15 @@ $ cargo test
 `/burning-pro-server` にて実行する。
 
 ```sh
-$ cargo doc
+$ cargo doc --document-private-items
 ```
+
+`--document-private-items` は、プライベート API のドキュメントも生成するオプション。
 
 ドキュメント生成後、自動的にブラウザで開くなら:
 
 ```sh
-$ cargo doc --open
+$ cargo doc  --document-private-items --open
 ```
 
 ## コードフォーマット
