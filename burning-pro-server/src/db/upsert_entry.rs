@@ -146,7 +146,7 @@ pub struct Person {
     /// Real name.
     pub real_name: Option<String>,
     /// Display name.
-    pub display_name: Option<String>,
+    pub display_name: String,
     /// URLs of web pages of the person.
     pub url: Vec<String>,
     /// Twitter account.
@@ -194,7 +194,7 @@ impl Handler<Person> for DbExecutor {
                         created_at: &now_utc,
                         modified_at: &now_utc,
                         real_name: real_name.as_ref().map(AsRef::as_ref),
-                        display_name: display_name.as_ref().map(AsRef::as_ref),
+                        display_name: display_name.as_ref(),
                         twitter: twitter.as_ref().map(AsRef::as_ref),
                     };
                     // NOTE: SQLite backend does not support "returning clause".

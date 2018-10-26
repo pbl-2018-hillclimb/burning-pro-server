@@ -145,7 +145,7 @@ pub struct Person {
     /// Display name.
     ///
     /// This can be unofficial name.
-    pub display_name: Option<String>,
+    pub display_name: String,
     /// Twitter account (if known).
     pub twitter: Option<String>,
 }

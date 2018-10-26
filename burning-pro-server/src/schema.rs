@@ -48,7 +48,7 @@ table! {
         created_at -> Timestamp,
         modified_at -> Timestamp,
         real_name -> Nullable<Text>,
-        display_name -> Nullable<Text>,
+        display_name -> Text,
         twitter -> Nullable<Text>,
     }
 }

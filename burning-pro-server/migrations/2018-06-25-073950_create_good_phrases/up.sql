@@ -9,7 +9,7 @@ CREATE TABLE persons (
     created_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     modified_at TIMESTAMP NOT NULL DEFAULT (DATETIME('now')),
     real_name VARCHAR,
-    display_name VARCHAR,
+    display_name VARCHAR NOT NULL UNIQUE,
     twitter VARCHAR UNIQUE
 );
 
