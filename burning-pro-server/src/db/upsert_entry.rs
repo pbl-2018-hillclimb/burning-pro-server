@@ -65,19 +65,20 @@ impl Handler<GoodPhrase> for DbExecutor {
             let good_phrase_id = match good_phrase_id {
                 Some(good_phrase_id) => {
                     // Update.
-                    diesel::update(schema::good_phrases::table.filter(columns::good_phrase_id.eq(good_phrase_id)))
-                        .set((
-                            columns::modified_at.eq(now_utc),
-                            columns::title.eq(title),
-                            columns::phrase.eq(phrase),
-                            columns::person_id.eq(person_id),
-                            columns::url.eq(url),
-                            columns::deleted.eq(deleted),
-                            columns::published_at.eq(published_at.map(|dt| dt.naive_utc())),
-                        ))
-                        .execute(conn)?;
+                    diesel::update(
+                        schema::good_phrases::table
+                            .filter(columns::good_phrase_id.eq(good_phrase_id)),
+                    ).set((
+                        columns::modified_at.eq(now_utc),
+                        columns::title.eq(title),
+                        columns::phrase.eq(phrase),
+                        columns::person_id.eq(person_id),
+                        columns::url.eq(url),
+                        columns::deleted.eq(deleted),
+                        columns::published_at.eq(published_at.map(|dt| dt.naive_utc())),
+                    )).execute(conn)?;
                     good_phrase_id
-                },
+                }
                 None => {
                     // Insert.
                     let published_at_utc = published_at.map(|dt| dt.naive_utc());
@@ -100,7 +101,7 @@ impl Handler<GoodPhrase> for DbExecutor {
                         .values(new_row)
                         .execute(conn)?;
                     diesel::select(last_insert_rowid).execute(conn)? as i32
-                },
+                }
             };
 
             // Update tags relations.
@@ -111,8 +112,13 @@ impl Handler<GoodPhrase> for DbExecutor {
             for delete_id in current_ids.iter().filter(|id| !tag_ids.contains(id)) {
                 diesel::delete(
                     schema::good_phrases_and_tags::table
-                        .filter(schema::good_phrases_and_tags::columns::good_phrase_id.eq(good_phrase_id))
-                        .filter(schema::good_phrases_and_tags::columns::good_phrase_tag_id.eq(delete_id))
+                        .filter(
+                            schema::good_phrases_and_tags::columns::good_phrase_id
+                                .eq(good_phrase_id),
+                        ).filter(
+                            schema::good_phrases_and_tags::columns::good_phrase_tag_id
+                                .eq(delete_id),
+                        ),
                 ).execute(conn)?;
             }
             for insert_id in tag_ids.iter().filter(|id| !current_ids.contains(id)) {
@@ -179,10 +185,9 @@ impl Handler<Person> for DbExecutor {
                             columns::real_name.eq(real_name),
                             columns::display_name.eq(display_name),
                             columns::twitter.eq(twitter),
-                        ))
-                        .execute(conn)?;
+                        )).execute(conn)?;
                     person_id
-                },
+                }
                 None => {
                     let new_row = models::NewPerson {
                         person_id: None,
@@ -200,7 +205,7 @@ impl Handler<Person> for DbExecutor {
                         .values(new_row)
                         .execute(conn)?;
                     diesel::select(last_insert_rowid).execute(conn)? as i32
-                },
+                }
             };
 
             // Update URLs.
@@ -209,16 +214,18 @@ impl Handler<Person> for DbExecutor {
                 .select((
                     schema::person_urls::columns::person_url_id,
                     schema::person_urls::columns::url,
-                ))
-                .load::<(i32, String)>(conn)?;
+                )).load::<(i32, String)>(conn)?;
 
             for (delete_id, _) in current_urls.iter().filter(|(_, url)| !urls.contains(url)) {
                 diesel::delete(
                     schema::person_urls::table
-                        .filter(schema::person_urls::columns::person_url_id.eq(delete_id))
+                        .filter(schema::person_urls::columns::person_url_id.eq(delete_id)),
                 ).execute(conn)?;
             }
-            for url in urls.iter().filter(|url| !current_urls.iter().any(|(_, v)| v == *url)) {
+            for url in urls
+                .iter()
+                .filter(|url| !current_urls.iter().any(|(_, v)| v == *url))
+            {
                 let row = models::NewPersonUrl {
                     person_url_id: None,
                     created_at: &now_utc,
@@ -254,7 +261,7 @@ impl Handler<GoodPhraseTag> for DbExecutor {
     type Result = <GoodPhraseTag as Message>::Result;
 
     fn handle(&mut self, msg: GoodPhraseTag, _ctx: &mut Self::Context) -> Self::Result {
-        use schema::good_phrase_tags::{table, columns};
+        use schema::good_phrase_tags::{columns, table};
 
         let conn = &self.pool().get()?;
 
@@ -269,12 +276,9 @@ impl Handler<GoodPhraseTag> for DbExecutor {
             Some(good_phrase_tag_id) => {
                 // Update.
                 diesel::update(table.filter(columns::good_phrase_tag_id.eq(good_phrase_tag_id)))
-                    .set((
-                        columns::name.eq(name),
-                        columns::description.eq(description),
-                    ))
+                    .set((columns::name.eq(name), columns::description.eq(description)))
                     .execute(conn)?;
-            },
+            }
             None => {
                 let now_utc = Local::now().naive_utc();
                 let new_row = models::NewGoodPhraseTag {
@@ -288,10 +292,8 @@ impl Handler<GoodPhraseTag> for DbExecutor {
                 // See <https://docs.diesel.rs/diesel/backend/trait.SupportsReturningClause.html>.
                 // Although you can retrieve last inserted row ID:
                 // See <https://github.com/diesel-rs/diesel/issues/771>.
-                diesel::insert_into(table)
-                    .values(new_row)
-                    .execute(conn)?;
-            },
+                diesel::insert_into(table).values(new_row).execute(conn)?;
+            }
         }
         Ok(())
     }
