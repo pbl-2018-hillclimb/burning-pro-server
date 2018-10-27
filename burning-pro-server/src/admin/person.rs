@@ -37,12 +37,60 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         }).responder()
 }
 
+/// Internal implementation for `.../new` and `.../{id}` endpoints with GET mehod.
+fn get_impl(id: Option<i32>, req: &HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+    let db = req.state().db();
+    let template = Arc::clone(req.state().template());
+
+    let additional: Box<dyn Future<Item = _, Error = _>> = match id {
+        Some(person_id) => {
+            let person =
+                db.send(PersonQuery::PersonId(person_id))
+                    .from_err()
+                    .and_then(|res| match res {
+                        Ok(mut content) => content
+                            .pop()
+                            .map(|content| ("person", content))
+                            .ok_or_else(|| {
+                                debug!("Person not found.");
+                                ErrorBadRequest("Person not found")
+                            }),
+                        Err(e) => {
+                            error!("`admin::person::get_impl()`: {}", e);
+                            Err(ErrorInternalServerError("DB error"))
+                        }
+                    });
+            let person_url = db
+                .send(PersonUrlQuery::PersonId(person_id))
+                .from_err()
+                .and_then(|res| match res {
+                    Ok(content) => Ok(("person_url", content)),
+                    Err(e) => {
+                        error!("`admin::person::get_impl()`: {}", e);
+                        Err(ErrorInternalServerError("DB error"))
+                    }
+                });
+            Box::new(person.join(person_url).map(Some))
+        }
+        None => Box::new(futures::future::ok(None)),
+    };
+
+    additional
+        .map(move |additional| {
+            let mut ctx = Context::new();
+            if let Some((person, person_url)) = additional {
+                ctx.insert(person.0, &person.1);
+                ctx.insert(person_url.0, &person_url.1);
+            }
+            render(&template, &ctx, "register/person/update.html")
+        }).responder()
+}
+
 /// Processes the request for new person registration form.
 #[allow(unknown_lints, needless_pass_by_value)]
-pub fn new(req: HttpRequest<AppState>) -> HttpResponse {
+pub fn new(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::person::new()`: {:?}", req);
-    let template = req.state().template();
-    render(template, &Context::new(), "register/person/update.html")
+    get_impl(None, &req)
 }
 
 /// Processes the request for person update form.
@@ -50,42 +98,7 @@ pub fn new(req: HttpRequest<AppState>) -> HttpResponse {
 pub fn update(path: Path<i32>, req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::person::update()`: {:?}", req);
     let person_id = path.into_inner();
-    let db = req.state().db();
-    let person = db
-        .send(PersonQuery::PersonId(person_id))
-        .from_err()
-        .and_then(|res| match res {
-            Ok(mut content) => if content.is_empty() {
-                debug!("Person not found.");
-                Err(ErrorBadRequest("Person not found"))
-            } else {
-                Ok(content.swap_remove(0))
-            },
-            Err(e) => {
-                error!("`admin::person::update()`: {}", e);
-                Err(ErrorInternalServerError("DB error"))
-            }
-        });
-    let person_url = db
-        .send(PersonUrlQuery::PersonId(person_id))
-        .from_err()
-        .and_then(|res| match res {
-            Ok(content) => Ok(content),
-            Err(e) => {
-                error!("`admin::person::update()`: {}", e);
-                Err(ErrorInternalServerError("DB error"))
-            }
-        });
-    let template = Arc::clone(req.state().template());
-    person
-        .join(person_url)
-        .map(|(person, person_url)| {
-            let mut ctx = Context::new();
-            ctx.insert("person", &person);
-            ctx.insert("person_url", &person_url);
-            ctx
-        }).map(move |ctx| render(&template, &ctx, "register/person/update.html"))
-        .responder()
+    get_impl(Some(person_id), &req)
 }
 
 /// Processes the person update query.
