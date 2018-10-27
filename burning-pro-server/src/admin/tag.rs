@@ -37,12 +37,48 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         }).responder()
 }
 
+/// Internal implementation for `.../new` and `.../{id}` endpoints with GET mehod.
+fn get_impl(id: Option<i32>, req: &HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+    let db = req.state().db();
+    let template = Arc::clone(req.state().template());
+
+    let additional: Box<dyn Future<Item = _, Error = _>> =
+        match id {
+            Some(tag_id) => Box::new(Some(
+                db.send(GoodPhraseTagQuery::TagId(tag_id))
+                    .from_err()
+                    .and_then(|res| match res {
+                        Ok(mut content) => content
+                            .pop()
+                            .map(|content| ("tag", content))
+                            .ok_or_else(|| {
+                                debug!("Tag not found.");
+                                ErrorBadRequest("Tag not found")
+                            }),
+                        Err(e) => {
+                            error!("`admin::tag::get_impl()`: {}", e);
+                            Err(ErrorInternalServerError("DB error"))
+                        }
+                    }),
+            )),
+            None => Box::new(futures::future::ok(None)),
+        };
+
+    additional
+        .map(move |additional| {
+            let mut ctx = Context::new();
+            if let Some(tag) = additional {
+                ctx.insert(tag.0, &tag.1);
+            }
+            render(&template, &ctx, "register/tag/update.html")
+        }).responder()
+}
+
 /// Processes the request for new tag registration form.
 #[allow(unknown_lints, needless_pass_by_value)]
-pub fn new(req: HttpRequest<AppState>) -> HttpResponse {
+pub fn new(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::tag::new()`: {:?}", req);
-    let template = req.state().template();
-    render(template, &Context::new(), "register/tag/update.html")
+    get_impl(None, &req)
 }
 
 /// Processes the request for tag update form.
@@ -50,24 +86,7 @@ pub fn new(req: HttpRequest<AppState>) -> HttpResponse {
 pub fn update(path: Path<i32>, req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::tag::update()`: {:?}", req);
     let tag_id = path.into_inner();
-    let db = req.state().db();
-    let template = Arc::clone(req.state().template());
-    db.send(GoodPhraseTagQuery::TagId(tag_id))
-        .from_err()
-        .and_then(move |res| match res {
-            Ok(content) => if content.is_empty() {
-                debug!("Tag not found.");
-                Err(ErrorBadRequest("Tag not found"))
-            } else {
-                let mut ctx = Context::new();
-                ctx.insert("tag", &content[0]);
-                Ok(render(&template, &ctx, "register/tag/update.html"))
-            },
-            Err(e) => {
-                error!("`admin::tag::update()`: {}", e);
-                Err(ErrorInternalServerError("DB error"))
-            }
-        }).responder()
+    get_impl(Some(tag_id), &req)
 }
 
 /// Processes the tag update query.
