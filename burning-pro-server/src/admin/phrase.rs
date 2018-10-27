@@ -7,7 +7,7 @@ use actix_web::{AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse,
 use futures::future::Future;
 use tera::Context;
 
-use admin::{form, render};
+use admin::{form, list_impl, render};
 use app::AppState;
 use db::{upsert_entry, GoodPhraseQuery, GoodPhraseTagQuery, PersonQuery};
 
@@ -15,26 +15,23 @@ use db::{upsert_entry, GoodPhraseQuery, GoodPhraseTagQuery, PersonQuery};
 #[allow(unknown_lints, needless_pass_by_value)]
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::phrase::index()`: {:?}", req);
+
     let db = req.state().db();
-    let template = Arc::clone(req.state().template());
-    db.send(GoodPhraseQuery::All)
+    let rows = db
+        .send(GoodPhraseQuery::All)
         .from_err()
         .and_then(move |res| match res {
-            Ok(contents) => {
-                let mut ctx = Context::new();
-                ctx.insert("table_name", "発言");
-                let rows = contents
-                    .into_iter()
-                    .map(|row| (row.good_phrase_id, row.title))
-                    .collect::<Vec<_>>();
-                ctx.insert("rows", &rows);
-                Ok(render(&template, &ctx, "register/list.html"))
-            }
+            Ok(contents) => Ok(contents
+                .into_iter()
+                .map(|row| (row.good_phrase_id, row.title))
+                .collect::<Vec<_>>()),
             Err(e) => {
                 error!("`admin::phrase::index()`: {}", e);
-                Ok(HttpResponse::InternalServerError().into())
+                Err(ErrorInternalServerError("DB Error"))
             }
-        }).responder()
+        });
+    let template = Arc::clone(req.state().template());
+    list_impl(template, "発言", rows)
 }
 
 /// Internal implementation for `.../new` and `.../{id}` endpoints with GET mehod.

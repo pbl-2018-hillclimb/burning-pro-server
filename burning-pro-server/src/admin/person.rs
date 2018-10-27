@@ -7,7 +7,7 @@ use actix_web::{AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse,
 use futures::future::Future;
 use tera::Context;
 
-use admin::{form, render};
+use admin::{form, list_impl, render};
 use app::AppState;
 use db::{upsert_entry, PersonQuery, PersonUrlQuery};
 
@@ -15,26 +15,23 @@ use db::{upsert_entry, PersonQuery, PersonUrlQuery};
 #[allow(unknown_lints, needless_pass_by_value)]
 pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::person::index()`: {:?}", req);
+
     let db = req.state().db();
-    let template = Arc::clone(req.state().template());
-    db.send(PersonQuery::All)
+    let rows = db
+        .send(PersonQuery::All)
         .from_err()
         .and_then(move |res| match res {
-            Ok(contents) => {
-                let mut ctx = Context::new();
-                ctx.insert("table_name", "発言者");
-                let rows = contents
-                    .into_iter()
-                    .map(|row| (row.person_id, row.display_name))
-                    .collect::<Vec<_>>();
-                ctx.insert("rows", &rows);
-                Ok(render(&template, &ctx, "register/list.html"))
-            }
+            Ok(contents) => Ok(contents
+                .into_iter()
+                .map(|row| (row.person_id, row.display_name))
+                .collect::<Vec<_>>()),
             Err(e) => {
                 error!("`db_update::person_index()`: {}", e);
                 Err(ErrorInternalServerError("DB Error"))
             }
-        }).responder()
+        });
+    let template = Arc::clone(req.state().template());
+    list_impl(template, "発言者", rows)
 }
 
 /// Internal implementation for `.../new` and `.../{id}` endpoints with GET mehod.

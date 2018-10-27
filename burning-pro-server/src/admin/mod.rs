@@ -1,7 +1,10 @@
 //! DB update service.
 
+use std::sync::Arc;
+
 use actix_web::error::{ResponseError, UrlencodedError};
-use actix_web::{Error, HttpRequest, HttpResponse};
+use actix_web::{AsyncResponder, Error, FutureResponse, HttpRequest, HttpResponse};
+use futures::future::Future;
 use tera::{Context, Tera};
 
 use app::AppState;
@@ -51,4 +54,18 @@ pub fn index(req: HttpRequest<AppState>) -> HttpResponse {
         &Context::new(),
         "register/index.html",
     )
+}
+
+/// Show list of rows for a table.
+fn list_impl(
+    template: Arc<Tera>,
+    table_name: &str,
+    rows: impl 'static + Future<Item = Vec<(i32, String)>, Error = Error>,
+) -> FutureResponse<HttpResponse> {
+    let mut ctx = Context::new();
+    ctx.insert("table_name", table_name);
+    rows.map(move |rows| {
+        ctx.insert("rows", &rows);
+        render(&template, &ctx, "register/list.html")
+    }).responder()
 }
