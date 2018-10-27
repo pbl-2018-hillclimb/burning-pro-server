@@ -11,15 +11,15 @@
       <dl>
         <dt><label for="real_name">実名</label></dt>
         <dd>
-        <input id="real_name" name="real_name" type="text" value="{{ person.real_name }}" />
+          <input id="real_name" name="real_name" type="text" {% if person %}value="{{ person.real_name }}"{% endif %} />
         </dd>
         <dt><label for="display_name">*表示名</label></dt>
         <dd>
-          <input id="display_name" name="display_name" type="text" required value="{{ person.display_name }}" />
+          <input id="display_name" name="display_name" type="text" required {% if person %}value="{{ person.display_name }}"{% endif %} />
         </dd>
         <dt><label for="url">関連ページのURL（カンマ区切りで複数指定）</label></dt>
         <dd>
-          <textarea id="url" name="url" cols="50" rows="5" wrap="soft">
+          <textarea id="url" name="url" cols="50" rows="5" wrap="soft">{% if person_url %}
 {% set url_size = person_url | length -%}
 {% for url in person_url -%}
 {% if loop.index == url_size -%}
@@ -28,13 +28,15 @@
 {{ url.url }},
 {% endif -%}
 {% endfor -%}
-          </textarea>
+          {% endif %}</textarea>
         </dd>
         <dt><label for="twitter">Twitterアカウント（@は省略）</label></dt>
         <dd>
-          <input id="twitter" name="twitter" type="text" pattern="[a-zA-z0-9_]*" value="{{ person.twitter }}" />
+          <input id="twitter" name="twitter" type="text" pattern="[a-zA-z0-9_]*" {% if person %}value="{{ person.twitter }}"{% endif %} />
         </dd>
-        <input name="person_id" type="hidden" value="{{ person.person_id }}" >
+        {% if person %}
+          <input name="person_id" type="hidden" value="{{ person.person_id }}" />
+        {% endif %}
       </dl>
       <button type="submit">送信</button>
     </form>

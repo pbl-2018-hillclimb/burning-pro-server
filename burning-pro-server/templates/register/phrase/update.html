@@ -11,11 +11,11 @@
       <dl>
         <dt><label for="title">*タイトル</label></dt>
         <dd>
-          <input id="title" type="text" name="title" required value="{{ phrase.title }}" />
+          <input id="title" type="text" name="title" required {% if phrase %}value="{{ phrase.title }}"{% endif %} />
         </dd>
         <dt><label for="phrase">*発言</label></dt>
         <dd>
-          <textarea id="phrase" name="phrase" cols="50" rows="5" wrap="soft" required>{{ phrase.phrase }}</textarea>
+          <textarea id="phrase" name="phrase" cols="50" rows="5" wrap="soft" required>{% if phrase %}{{ phrase.phrase }}{% endif %}</textarea>
         </dd>
         <dt><label for="person_id">*発言者</label></dt>
         <dd>
@@ -23,7 +23,7 @@
             <option value="">--発言者を選択してください--</option>
             {% for person in all_person -%}
               <option value="{{ person.person_id }}"
-                {% if person.person_id == phrase.person_id -%}
+                {% if phrase and person.person_id == phrase.person_id -%}
                   selected
                 {% endif -%}
               >
@@ -34,38 +34,45 @@
         </dd>
         <dt><label for="url">元ネタURL</label></dt>
         <dd>
-          <input id="url" name="url" type="text" value="{{ phrase.url }}" />
+          <input id="url" name="url" type="text" {% if phrase %}value="{{ phrase.url }}"{% endif %} />
         </dd>
         <dt>*元ネタ削除済み？</dt>
         <dd>
+          {% if phrase %}
+            {% set phrase_is_deleted = phrase.deleted %}
+          {% else %}
+            {% set phrase_is_deleted = false %}
+          {% endif %}
           <div>
             <input id="deleted_true" name="deleted" type="radio"
-              {% if phrase.deleted -%}checked{% endif -%}
+              {% if phrase_is_deleted -%}checked{% endif -%}
             />
             <label for="deleted_true">Yes</label>
           </div>
           <div>
             <input id="deleted_false" name="deleted" type="radio" value="false"
-              {% if not phrase.deleted -%}checked{% endif -%}
+              {% if not phrase_is_deleted -%}checked{% endif -%}
             />
             <label for="deleted_false">No または不明</label>
           </div>
         </dd>
         <dt><label for="published_at">元ネタ投稿日時（<code>YYYY-MM-DDThh:mm:ss</code> で入力）</label></dt>
         <dd>
-          <input id="published_at" name="published_at" type="text" value="{{ phrase.published_at }}" />
+          <input id="published_at" name="published_at" type="text" {% if phrase %}value="{{ phrase.published_at }}"{% endif %} />
         </dd>
         <dt>タグ</dt>
         <dd>
           <ul>
             {% for tag in all_tag -%}
               <li>
-                <input name="tags_{{ tag.good_phrase_tag_id }}" type="checkbox" value="{{ tag.good_phrase_tag_id }}"
-                   {% for ptag in phrase_tag -%}
-                     {% if tag.good_phrase_tag_id == ptag.good_phrase_tag_id -%}
-                       checked{% break -%}
-                     {% endif -%}
-                   {% endfor -%}
+                <input id="tags_{{ tag.good_phrase_tag_id }}" name="tags_{{ tag.good_phrase_tag_id }}" type="checkbox" value="{{ tag.good_phrase_tag_id }}"
+                  {% if phrase_tag %}
+                    {% for ptag in phrase_tag -%}
+                      {% if tag.good_phrase_tag_id == ptag.good_phrase_tag_id -%}
+                        checked{% break -%}
+                      {% endif -%}
+                    {% endfor -%}
+                  {% endif %}
                 />
                 <label for="tags_{{ tag.good_phrase_tag_id }}">{{ tag.name }}</label>
               </li>
@@ -73,7 +80,9 @@
           </ul>
         </dd>
       </dl>
-      <input name="good_phrase_id" type="hidden" value="{{ phrase.good_phrase_id }}" />
+      {% if phrase %}
+        <input name="good_phrase_id" type="hidden" value="{{ phrase.good_phrase_id }}" />
+      {% endif %}
       {% for person in all_person -%}
         <input name="person_name_{{ person.person_id }}" type="hidden" value="{{ person.display_name }}" />
       {% endfor -%}

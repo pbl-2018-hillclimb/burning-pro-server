@@ -42,7 +42,7 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 pub fn new(req: HttpRequest<AppState>) -> HttpResponse {
     debug!("request for `admin::person::new()`: {:?}", req);
     let template = req.state().template();
-    render(template, &Context::new(), "register/person/new.html")
+    render(template, &Context::new(), "register/person/update.html")
 }
 
 /// Processes the request for person update form.

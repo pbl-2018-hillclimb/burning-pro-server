@@ -42,7 +42,7 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 pub fn new(req: HttpRequest<AppState>) -> HttpResponse {
     debug!("request for `admin::tag::new()`: {:?}", req);
     let template = req.state().template();
-    render(template, &Context::new(), "register/tag/new.html")
+    render(template, &Context::new(), "register/tag/update.html")
 }
 
 /// Processes the request for tag update form.

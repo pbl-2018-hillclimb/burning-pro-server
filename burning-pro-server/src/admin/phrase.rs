@@ -75,7 +75,7 @@ pub fn new(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     let db = req.state().db();
     let template = Arc::clone(req.state().template());
     make_phrase_ctx(db)
-        .map(move |ctx| render(&template, &ctx, "register/phrase/new.html"))
+        .map(move |ctx| render(&template, &ctx, "register/phrase/update.html"))
         .responder()
 }
 

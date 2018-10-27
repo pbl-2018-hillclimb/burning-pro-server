@@ -11,14 +11,16 @@
       <dl>
         <dt><label for="name">*タグ名</label></dt>
         <dd>
-          <input id="name" name="name" type="text" required value="{{ tag.name }}" />
+          <input id="name" name="name" type="text" required {% if tag %}value="{{ tag.name }}"{% endif %} />
         </dd>
         <dt><label for="description">タグの説明</label></dt>
         <dd>
-          <textarea id="description" name="description" cols="50" rows="5" wrap="soft">{{ tag.description }}</textarea>
+          <textarea id="description" name="description" cols="50" rows="5" wrap="soft">{% if tag %}{{ tag.description }}{% endif %}</textarea>
         </dd>
       </dl>
-      <input type="hidden" name="good_phrase_tag_id" value="{{ tag.good_phrase_tag_id }}" />
+      {% if tag %}
+        <input type="hidden" name="good_phrase_tag_id" value="{{ tag.good_phrase_tag_id }}" />
+      {% endif %}
       <button type="submit">送信</button>
     </form>
     <a href="..">戻る</a>
