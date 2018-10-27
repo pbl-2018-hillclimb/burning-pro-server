@@ -107,7 +107,7 @@ impl Handler<GoodPhrase> for DbExecutor {
             // Update tags relations.
             let current_ids = schema::good_phrases_and_tags::table
                 .filter(schema::good_phrases_and_tags::columns::good_phrase_id.eq(good_phrase_id))
-                .select(schema::good_phrases_and_tags::columns::good_phrase_and_tag_id)
+                .select(schema::good_phrases_and_tags::columns::good_phrase_tag_id)
                 .load::<i32>(conn)?;
             for delete_id in current_ids.iter().filter(|id| !tag_ids.contains(id)) {
                 diesel::delete(
