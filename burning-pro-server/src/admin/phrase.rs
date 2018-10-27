@@ -2,15 +2,14 @@
 
 use std::sync::Arc;
 
-use actix::Addr;
 use actix_web::error::{ErrorBadRequest, ErrorInternalServerError};
-use actix_web::{AsyncResponder, Error, Form, FutureResponse, HttpRequest, HttpResponse, Path};
+use actix_web::{AsyncResponder, Form, FutureResponse, HttpRequest, HttpResponse, Path};
 use futures::future::Future;
 use tera::Context;
 
 use admin::{form, render};
 use app::AppState;
-use db::{upsert_entry, DbExecutor, GoodPhraseQuery, GoodPhraseTagQuery, PersonQuery};
+use db::{upsert_entry, GoodPhraseQuery, GoodPhraseTagQuery, PersonQuery};
 
 /// Processes the request for phrase registration index.
 #[allow(unknown_lints, needless_pass_by_value)]
@@ -38,15 +37,18 @@ pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
         }).responder()
 }
 
-/// Prepare context for rendering phrase form.
-fn make_phrase_ctx(db: &Addr<DbExecutor>) -> impl Future<Item = Context, Error = Error> {
+/// Internal implementation for `.../new` and `.../{id}` endpoints with GET mehod.
+fn get_impl(id: Option<i32>, req: &HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+    let db = req.state().db();
+    let template = Arc::clone(req.state().template());
+
     let all_tag = db
         .send(GoodPhraseTagQuery::All)
         .from_err()
         .and_then(|res| match res {
-            Ok(content) => Ok(content),
+            Ok(content) => Ok(("all_tag", content)),
             Err(e) => {
-                error!("`admin::phrase::make_phrase_ctx()`: {}", e);
+                error!("`admin::phrase::get_impl()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
         });
@@ -54,29 +56,64 @@ fn make_phrase_ctx(db: &Addr<DbExecutor>) -> impl Future<Item = Context, Error =
         .send(PersonQuery::All)
         .from_err()
         .and_then(|res| match res {
-            Ok(content) => Ok(content),
+            Ok(content) => Ok(("all_person", content)),
             Err(e) => {
-                error!("`admin::phrase::make_phrase_ctx()`: {}", e);
+                error!("`admin::phrase::get_impl()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
         });
-    all_tag.join(all_person).map(|(all_tag, all_person)| {
-        let mut ctx = Context::new();
-        ctx.insert("all_tag", &all_tag);
-        ctx.insert("all_person", &all_person);
-        ctx
-    })
+    let additional: Box<dyn Future<Item = _, Error = _>> = match id {
+        Some(phrase_id) => {
+            let phrase =
+                db.send(GoodPhraseQuery::PhraseId(phrase_id))
+                    .from_err()
+                    .and_then(|res| match res {
+                        Ok(mut content) => content
+                            .pop()
+                            .map(|content| ("phrase", content))
+                            .ok_or_else(|| {
+                                debug!("Phrase not found.");
+                                ErrorBadRequest("Phrase not found")
+                            }),
+                        Err(e) => {
+                            error!("`admin::phrase::get_impl()`: {}", e);
+                            Err(ErrorInternalServerError("DB error"))
+                        }
+                    });
+            let phrase_tag = db
+                .send(GoodPhraseTagQuery::PhraseId(phrase_id))
+                .from_err()
+                .and_then(|res| match res {
+                    Ok(content) => Ok(("phrase_tag", content)),
+                    Err(e) => {
+                        error!("`admin::phrase::get_impl()`: {}", e);
+                        Err(ErrorInternalServerError("DB error"))
+                    }
+                });
+            Box::new(phrase.join(phrase_tag).map(Some))
+        }
+        None => Box::new(futures::future::ok(None)),
+    };
+
+    additional
+        .join3(all_tag, all_person)
+        .map(move |(additional, all_tag, all_person)| {
+            let mut ctx = Context::new();
+            ctx.insert(all_tag.0, &all_tag.1);
+            ctx.insert(all_person.0, &all_person.1);
+            if let Some((phrase, phrase_tag)) = additional {
+                ctx.insert(phrase.0, &phrase.1);
+                ctx.insert(phrase_tag.0, &phrase_tag.1);
+            }
+            render(&template, &ctx, "register/phrase/update.html")
+        }).responder()
 }
 
 /// Processes the request for new phrase registration form.
 #[allow(unknown_lints, needless_pass_by_value)]
 pub fn new(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::phrase::new()`: {:?}", req);
-    let db = req.state().db();
-    let template = Arc::clone(req.state().template());
-    make_phrase_ctx(db)
-        .map(move |ctx| render(&template, &ctx, "register/phrase/update.html"))
-        .responder()
+    get_impl(None, &req)
 }
 
 /// Processes the request for phrase update form.
@@ -84,41 +121,7 @@ pub fn new(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
 pub fn update(path: Path<i32>, req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
     debug!("request for `admin::phrase::update()`: {:?}", req);
     let phrase_id = path.into_inner();
-    let db = req.state().db();
-    let ctx = make_phrase_ctx(db);
-    let phrase = db
-        .send(GoodPhraseQuery::PhraseId(phrase_id))
-        .from_err()
-        .and_then(|res| match res {
-            Ok(mut content) => if content.is_empty() {
-                debug!("Phrase not found.");
-                Err(ErrorBadRequest("Phrase not found"))
-            } else {
-                Ok(content.swap_remove(0))
-            },
-            Err(e) => {
-                error!("`admin::phrase::update()`: {}", e);
-                Err(ErrorInternalServerError("DB error"))
-            }
-        });
-    let phrase_tag = db
-        .send(GoodPhraseTagQuery::PhraseId(phrase_id))
-        .from_err()
-        .and_then(|res| match res {
-            Ok(content) => Ok(content),
-            Err(e) => {
-                error!("`admin::phrase::update()`: {}", e);
-                Err(ErrorInternalServerError("DB error"))
-            }
-        });
-    let template = Arc::clone(req.state().template());
-    ctx.join3(phrase, phrase_tag)
-        .map(|(mut ctx, phrase, phrase_tag)| {
-            ctx.insert("phrase", &phrase);
-            ctx.insert("phrase_tag", &phrase_tag);
-            ctx
-        }).map(move |ctx| render(&template, &ctx, "register/phrase/update.html"))
-        .responder()
+    get_impl(Some(phrase_id), &req)
 }
 
 /// Processes the phrase update query.
