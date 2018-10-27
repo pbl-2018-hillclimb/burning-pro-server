@@ -15,7 +15,7 @@ extern crate pretty_env_logger;
 use std::env;
 
 use actix_web::middleware::Logger;
-use actix_web::{http, server, App, HttpRequest};
+use actix_web::{server, App, HttpRequest};
 
 /// Setup global logger.
 fn setup_logger() {
@@ -47,12 +47,12 @@ macro_rules! regist_form_handler {
         |scope| {
             scope
                 .resource("/", |r| r.with($root))
-                .resource("/new/", |r| r.with($new))
-                .resource("/update/{id}/", |r| r.with($update))
-                .resource("/post/", |r| {
-                    r.method(http::Method::POST).with_config($post, |(_, cfg)| {
-                        cfg.error_handler(admin::post_err_handler);
-                    })
+                .resource("/new/", |r| {
+                    r.get().with($new);
+                    r.post().with($post);
+                }).resource("/{id}/", |r| {
+                    r.get().with($update);
+                    r.post().with($post);
                 })
         }
     };
