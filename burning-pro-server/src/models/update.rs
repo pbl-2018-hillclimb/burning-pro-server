@@ -104,7 +104,7 @@ pub struct NewPerson<'a> {
     /// Display name.
     ///
     /// This can be unofficial name.
-    pub display_name: Option<&'a str>,
+    pub display_name: &'a str,
     /// Twitter account (if known).
     pub twitter: Option<&'a str>,
 }

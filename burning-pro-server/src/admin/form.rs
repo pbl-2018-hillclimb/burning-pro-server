@@ -42,8 +42,7 @@ pub struct Person {
     #[serde(deserialize_with = "deserialize_optstr")]
     pub real_name: Option<String>,
     /// Display name.
-    #[serde(deserialize_with = "deserialize_optstr")]
-    pub display_name: Option<String>,
+    pub display_name: String,
     /// URLs of web pages of the person.
     #[serde(deserialize_with = "deserialize_strvec")]
     //#[serde(with = "strvec_fmt")]

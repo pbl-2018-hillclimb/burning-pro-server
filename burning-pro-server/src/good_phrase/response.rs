@@ -44,7 +44,7 @@ pub struct Person {
     /// Real name.
     pub real_name: Option<String>,
     /// Display name.
-    pub display_name: Option<String>,
+    pub display_name: String,
     /// URLs of web pages of the person.
     pub url: Vec<String>,
     /// Twitter account.
