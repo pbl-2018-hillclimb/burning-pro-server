@@ -6,23 +6,24 @@
   </head>
   <body>
     <h1>タグの登録</h1>
-    <p>
-      <form action="/register/tag/post/" method="post">
-        <p>*印は必須フィールドです</p>
-        <p>
-          *タグ名</br>
-          <input type="text" name="name"
-                 value="{{ tag.name }}"required /><br/>
-          タグの詳細</br>
-          <textarea name="description" cols="50" rows="5" wrap="soft">{{ tag.description }}</textarea>
-          <br/>
-          <input type="hidden" name="good_phrase_tag_id"
-                 value="{{ tag.good_phrase_tag_id }}" />
-          <input type="submit">
-        </p>
-      </form>
-    </p>
-    <a href="/register/tag/">戻る</a>
+    <form action="" method="post">
+      <p>*印は必須フィールドです</p>
+      <dl>
+        <dt><label for="name">*タグ名</label></dt>
+        <dd>
+          <input id="name" name="name" type="text" required {% if tag %}value="{{ tag.name }}"{% endif %} />
+        </dd>
+        <dt><label for="description">タグの説明</label></dt>
+        <dd>
+          <textarea id="description" name="description" cols="50" rows="5" wrap="soft">{% if tag %}{{ tag.description }}{% endif %}</textarea>
+        </dd>
+      </dl>
+      {% if tag %}
+        <input type="hidden" name="good_phrase_tag_id" value="{{ tag.good_phrase_tag_id }}" />
+      {% endif %}
+      <button type="submit">送信</button>
+    </form>
+    <a href="..">戻る</a>
   </body>
 </html>
 
