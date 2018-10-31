@@ -1,4 +1,4 @@
-FROM rust:1.29
+FROM rust:1.30
 
 WORKDIR /usr/src/burning-pro-server
 COPY burning-pro-server burning-pro-server
