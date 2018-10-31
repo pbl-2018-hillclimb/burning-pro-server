@@ -8,7 +8,9 @@ RUN cargo install --debug --path ./burning-pro-server
 EXPOSE 8080
 
 VOLUME /data/db
+VOLUME /data/config
 
 ENV DATABASE_URL=/data/db/db.sqlite3
+ENV DOTENV=/data/config/env
 
 CMD ["burning-pro-server"]
