@@ -2,11 +2,12 @@
 
 extern crate burning_pro_server;
 
-use burning_pro_server::app::{AppState, AppStateBuilder};
+use burning_pro_server::app::{AdminAuthenticator, AppState, AppStateBuilder};
 use burning_pro_server::{admin, good_phrase};
 
 extern crate actix;
 extern crate actix_web;
+extern crate actix_web_httpauth;
 extern crate dotenv;
 #[macro_use]
 extern crate log;
@@ -14,7 +15,7 @@ extern crate pretty_env_logger;
 
 use std::env;
 
-use actix_web::middleware::Logger;
+use actix_web::middleware::{Logger, Middleware, Started};
 use actix_web::{server, App, HttpRequest};
 
 /// Setup global logger.
@@ -58,6 +59,31 @@ macro_rules! regist_form_handler {
     };
 }
 
+/// Admin auth middleware.
+#[derive(Default, Debug, Clone)]
+struct AdminAuth;
+
+impl Middleware<AppState> for AdminAuth {
+    fn start(&self, req: &HttpRequest<AppState>) -> actix_web::Result<Started> {
+        use actix_web::FromRequest;
+        use actix_web_httpauth::extractors::{
+            basic::{BasicAuth, Config},
+            AuthenticationError,
+        };
+
+        let authenticator = req.state().admin_auth();
+        let mut config = Config::default();
+        config.realm(authenticator.realm());
+        let auth_info = BasicAuth::from_request(&req, &config)?;
+
+        if authenticator.is_authenticated(auth_info.username(), auth_info.password()) {
+            Ok(Started::Done)
+        } else {
+            Err(AuthenticationError::from(config).into())
+        }
+    }
+}
+
 fn main() {
     match dotenv::dotenv() {
         Ok(path) => info!("Successfully loaded dotenv file: {}", path.display()),
@@ -85,8 +111,14 @@ fn main() {
 
     let database_url = env::var("DATABASE_URL").expect("`DATABASE_URL` envvar must be set");
     info!("Database URL: {}", database_url);
+    let admin_auth = AdminAuthenticator::from_env(
+        "Burning Pro admin web UI",
+        "ADMIN_WEB_USER",
+        "ADMIN_WEB_PASSWORD",
+    ).expect("Failed to get admin web auth config");
     let app_state = AppStateBuilder::new()
         .database_url(database_url)
+        .admin_auth(admin_auth)
         .build()
         .expect("Failed to build application state");
 
@@ -98,6 +130,7 @@ fn main() {
             .resource("/good_phrases/", |r| r.with(good_phrase::index))
             .scope("/register", |scope| {
                 scope
+                    .middleware(AdminAuth)
                     .resource("/", |r| r.with(admin::index))
                     .nested(
                         "/phrase",
