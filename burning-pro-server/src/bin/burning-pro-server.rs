@@ -85,7 +85,17 @@ impl Middleware<AppState> for AdminAuth {
 }
 
 fn main() {
-    match dotenv::dotenv() {
+    let dotenv_result = match env::var_os("DOTENV") {
+        Some(path) => {
+            info!("Loading dotenv file {:?}", path);
+            dotenv::from_filename(path)
+        }
+        None => {
+            info!("Loading default dotenv file (`.env`)");
+            dotenv::dotenv()
+        }
+    };
+    match dotenv_result {
         Ok(path) => info!("Successfully loaded dotenv file: {}", path.display()),
         Err(e) => {
             if e.not_found() {
