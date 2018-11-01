@@ -3,7 +3,7 @@ FROM rust:1.30
 WORKDIR /usr/src/burning-pro-server
 COPY burning-pro-server burning-pro-server
 
-RUN cargo install --debug --path ./burning-pro-server
+RUN cargo install --path ./burning-pro-server
 
 EXPOSE 8080
 
