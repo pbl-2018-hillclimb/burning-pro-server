@@ -1,6 +1,6 @@
 [package]
 name = "burning-pro-server"
-version = "0.1.20180928"
+version = "0.1.20181101"
 authors = ["ITSP PBL 2018 Hillclimb team"]
 repository = "https://github.com/pbl-2018-hillclimb/burning-pro-server"
 
