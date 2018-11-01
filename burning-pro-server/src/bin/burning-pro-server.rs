@@ -114,8 +114,16 @@ fn main() {
         env!("CARGO_PKG_VERSION")
     );
 
-    // TODO: Use config file to determine address and port to listen.
-    let listen = "0.0.0.0:8080";
+    // To provide safe default, this should not be `0.0.0.0:*`.
+    const LISTEN_DEFAULT: &str = "localhost:8080";
+    let listen = match env::var("LISTEN") {
+        Ok(v) => v,
+        Err(env::VarError::NotPresent) => LISTEN_DEFAULT.into(),
+        Err(e) => {
+            error!("Envvar `$LISTEN` has invalid value: {}", e);
+            panic!("Envvar `$LISTEN` has invalid value: {}", e);
+        }
+    };
 
     let sys = actix::System::new("burning-pro-server");
 
@@ -168,7 +176,7 @@ fn main() {
                         ),
                     )
             })
-    }).bind(listen)
+    }).bind(&listen)
     .unwrap_or_else(|e| {
         panic!("Failed to bind {}: {}", listen, e);
     }).start();
