@@ -57,17 +57,15 @@ impl Handler<GetGoodPhrases> for DbExecutor {
                 url: urls.into_iter().map(|url| url.url).collect(),
                 twitter: person.twitter.clone(),
             };
-            // TODO: sys_meta: `use_count` and `fav_count` is dummy.
             let sys_meta = response::SysMeta {
-                use_count: 5,
-                fav_count: 3,
+                use_count: 0,
+                fav_count: 0,
                 tags: tags.into_iter().map(|(_tag_rel, tag)| tag.name).collect(),
             };
-            // TODO: user_meta: dummy.
             let user_meta = response::UserMeta {
-                favorite: true,
-                use_count: 2,
-                mylists: vec!["言い訳用".into()],
+                favorite: false,
+                use_count: 0,
+                mylists: vec![],
             };
             result.push(response::GoodPhrase {
                 phrase,
