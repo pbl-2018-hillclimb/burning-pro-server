@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>発言者更新完了</title>
+  </head>
+  <body>
+    <h1>発言者更新完了</h1>
+    <p>以下の内容で発言者情報を更新しました。</p>
+    <dl>
+      <dt>実名</dt>
+      <dd>{{ person.real_name }}</dd>
+      <dt>表示名</dt>
+      <dd>{{ person.display_name }}</dd>
+      <dt>関連ページのURL</dt>
+      <dd>
+        <ul>
+          {% for url in person.url -%}
+            <li>
+              <code>{{ url }}</code>
+            </li>
+          {% endfor -%}
+        </ul>
+      </dd>
+      <dt>Twitterアカウント</dt>
+      <dd>{{ person.twitter }}</dd>
+    </dl>
+    <a href="../..">トップへ</a>
+  </body>
+</html>
+
