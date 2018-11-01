@@ -9,6 +9,7 @@ use diesel::r2d2::ConnectionManager;
 use r2d2;
 use tera::Tera;
 
+use app::AdminAuthenticator;
 use db::DbExecutor;
 
 /// Application-wide states.
@@ -18,6 +19,8 @@ pub struct AppState {
     db: Addr<DbExecutor>,
     /// tera(template engine) template.
     template: Arc<Tera>,
+    /// Admin authenticator.
+    admin_auth: AdminAuthenticator,
 }
 
 impl AppState {
@@ -29,6 +32,11 @@ impl AppState {
     /// Returns a tera template.
     pub fn template(&self) -> &Arc<Tera> {
         &self.template
+    }
+
+    /// Returns an admin authenticator.
+    pub fn admin_auth(&self) -> &AdminAuthenticator {
+        &self.admin_auth
     }
 }
 
@@ -44,6 +52,8 @@ impl AppState {
 pub struct AppStateBuilder {
     /// Database URL.
     database_url: Option<String>,
+    /// Admin authenticator.
+    admin_auth: Option<AdminAuthenticator>,
 }
 
 impl AppStateBuilder {
@@ -59,6 +69,15 @@ impl AppStateBuilder {
     pub fn database_url<S: Into<String>>(self, database_url: S) -> Self {
         Self {
             database_url: Some(database_url.into()),
+            ..self
+        }
+    }
+
+    /// Sets the given authenticator to `admin_auth` field.
+    pub fn admin_auth(self, admin_auth: AdminAuthenticator) -> Self {
+        Self {
+            admin_auth: Some(admin_auth),
+            ..self
         }
     }
 
@@ -82,6 +101,13 @@ impl AppStateBuilder {
             let glob = concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*");
             Arc::new(compile_templates!(glob))
         };
-        Ok(AppState { db, template })
+        let admin_auth = self
+            .admin_auth
+            .ok_or("`admin_auth` field is required but not set")?;
+        Ok(AppState {
+            db,
+            template,
+            admin_auth,
+        })
     }
 }

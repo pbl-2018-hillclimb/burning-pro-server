@@ -7,7 +7,7 @@ image_name="burning-pro-server-image"
 container_name="burning-pro-server"
 volume_host="/srv/burning-pro-server"
 volume_container="/data"
-run_opt="-itd --rm -v ${volume_host}/db:${volume_container}/db -p 8080:8080"
+run_opt="-itd --rm -v ${volume_host}/db:${volume_container}/db -v ${volume_host}/config:${volume_container}/config -p 8080:8080"
 
 # move to repository and get latest files
 cd "$(dirname "$(readlink -f "$0")")"
