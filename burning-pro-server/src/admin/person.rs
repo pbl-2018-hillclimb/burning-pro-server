@@ -80,8 +80,7 @@ fn get_impl(id: Option<i32>, req: &HttpRequest<AppState>) -> FutureResponse<Http
                 ctx.insert(person_url.0, &person_url.1);
             }
             render(&template, &ctx, "register/person/update.html")
-        })
-        .responder()
+        }).responder()
 }
 
 /// Processes the request for new person registration form.
@@ -134,6 +133,5 @@ pub fn post(req: HttpRequest<AppState>, form: Form<form::Person>) -> FutureRespo
                 error!("`admin::person::update()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
-        })
-        .responder()
+        }).responder()
 }

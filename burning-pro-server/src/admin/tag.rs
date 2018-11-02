@@ -68,8 +68,7 @@ fn get_impl(id: Option<i32>, req: &HttpRequest<AppState>) -> FutureResponse<Http
                 ctx.insert(tag.0, &tag.1);
             }
             render(&template, &ctx, "register/tag/update.html")
-        })
-        .responder()
+        }).responder()
 }
 
 /// Processes the request for new tag registration form.
@@ -119,6 +118,5 @@ pub fn post(req: HttpRequest<AppState>, form: Form<form::Tag>) -> FutureResponse
                 error!("`admin::tag::update()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
-        })
-        .responder()
+        }).responder()
 }

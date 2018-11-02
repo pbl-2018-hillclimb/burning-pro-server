@@ -50,6 +50,5 @@ pub fn post(
                 error!("`admin::phrase_request::post()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
-        })
-        .responder()
+        }).responder()
 }

@@ -68,8 +68,7 @@ impl Handler<GoodPhrase> for DbExecutor {
                     diesel::update(
                         schema::good_phrases::table
                             .filter(columns::good_phrase_id.eq(good_phrase_id)),
-                    )
-                    .set((
+                    ).set((
                         columns::modified_at.eq(now_utc),
                         columns::title.eq(title),
                         columns::phrase.eq(phrase),
@@ -77,8 +76,7 @@ impl Handler<GoodPhrase> for DbExecutor {
                         columns::url.eq(url),
                         columns::deleted.eq(deleted),
                         columns::published_at.eq(published_at.map(|dt| dt.naive_utc())),
-                    ))
-                    .execute(conn)?;
+                    )).execute(conn)?;
                     good_phrase_id
                 }
                 None => {
@@ -117,13 +115,11 @@ impl Handler<GoodPhrase> for DbExecutor {
                         .filter(
                             schema::good_phrases_and_tags::columns::good_phrase_id
                                 .eq(good_phrase_id),
-                        )
-                        .filter(
+                        ).filter(
                             schema::good_phrases_and_tags::columns::good_phrase_tag_id
                                 .eq(delete_id),
                         ),
-                )
-                .execute(conn)?;
+                ).execute(conn)?;
             }
             for insert_id in tag_ids.iter().filter(|id| !current_ids.contains(id)) {
                 let row = models::NewGoodPhraseAndTag {
@@ -252,8 +248,7 @@ impl Handler<Person> for DbExecutor {
                             columns::real_name.eq(real_name),
                             columns::display_name.eq(display_name),
                             columns::twitter.eq(twitter),
-                        ))
-                        .execute(conn)?;
+                        )).execute(conn)?;
                     person_id
                 }
                 None => {
@@ -282,15 +277,13 @@ impl Handler<Person> for DbExecutor {
                 .select((
                     schema::person_urls::columns::person_url_id,
                     schema::person_urls::columns::url,
-                ))
-                .load::<(i32, String)>(conn)?;
+                )).load::<(i32, String)>(conn)?;
 
             for (delete_id, _) in current_urls.iter().filter(|(_, url)| !urls.contains(url)) {
                 diesel::delete(
                     schema::person_urls::table
                         .filter(schema::person_urls::columns::person_url_id.eq(delete_id)),
-                )
-                .execute(conn)?;
+                ).execute(conn)?;
             }
             for url in urls
                 .iter()

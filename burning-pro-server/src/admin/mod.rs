@@ -48,6 +48,5 @@ fn list_impl(
     rows.map(move |rows| {
         ctx.insert("rows", &rows);
         render(&template, &ctx, "register/list.html")
-    })
-    .responder()
+    }).responder()
 }
