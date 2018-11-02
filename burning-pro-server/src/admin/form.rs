@@ -200,7 +200,7 @@ where
         type Value = Option<DateTime<Local>>;
 
         fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            formatter.write_str("a string `YYYY-MM-DDThh:mm:ss`")
+            formatter.write_str("a string `YYYY-MM-DDThh:mm:ssZZZ`")
         }
 
         fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
