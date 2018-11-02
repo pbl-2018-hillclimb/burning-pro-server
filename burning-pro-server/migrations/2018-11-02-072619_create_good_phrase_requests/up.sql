@@ -6,6 +6,5 @@ CREATE TABLE good_phrase_requests (
     url VARCHAR,
     deleted BOOLEAN NOT NULL DEFAULT 0,
     published_at TIMESTAMP,
-    tags VARCHAR,
-    UNIQUE(good_phrase_request_id)
+    tags VARCHAR
 );
