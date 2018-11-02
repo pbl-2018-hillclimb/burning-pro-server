@@ -114,7 +114,8 @@ macro_rules! impl_handler_for_model {
                             .values(row)
                             .execute(conn)
                             .map(|_| ())
-                    }).collect::<Result<Vec<_>, _>>()?;
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
                 Ok(result.len())
             }
         }

@@ -68,7 +68,8 @@ impl Handler<GoodPhrase> for DbExecutor {
                     diesel::update(
                         schema::good_phrases::table
                             .filter(columns::good_phrase_id.eq(good_phrase_id)),
-                    ).set((
+                    )
+                    .set((
                         columns::modified_at.eq(now_utc),
                         columns::title.eq(title),
                         columns::phrase.eq(phrase),
@@ -76,7 +77,8 @@ impl Handler<GoodPhrase> for DbExecutor {
                         columns::url.eq(url),
                         columns::deleted.eq(deleted),
                         columns::published_at.eq(published_at.map(|dt| dt.naive_utc())),
-                    )).execute(conn)?;
+                    ))
+                    .execute(conn)?;
                     good_phrase_id
                 }
                 None => {
@@ -115,11 +117,13 @@ impl Handler<GoodPhrase> for DbExecutor {
                         .filter(
                             schema::good_phrases_and_tags::columns::good_phrase_id
                                 .eq(good_phrase_id),
-                        ).filter(
+                        )
+                        .filter(
                             schema::good_phrases_and_tags::columns::good_phrase_tag_id
                                 .eq(delete_id),
                         ),
-                ).execute(conn)?;
+                )
+                .execute(conn)?;
             }
             for insert_id in tag_ids.iter().filter(|id| !current_ids.contains(id)) {
                 let row = models::NewGoodPhraseAndTag {
@@ -135,6 +139,69 @@ impl Handler<GoodPhrase> for DbExecutor {
             }
             Ok(())
         })
+    }
+}
+
+/// A phrase request
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+pub struct GoodPhraseRequest {
+    /// Title (short summary)
+    pub title: String,
+    /// Phrase.
+    pub phrase: String,
+    /// Author's name.
+    pub person: String,
+    /// URL of the phrase if it is posted or published to the WWW.
+    pub url: Option<String>,
+    /// Whether the source web page is deleted or not.
+    pub deleted: bool,
+    /// Datetime when the phrase is published.
+    pub published_at: Option<DateTime<Local>>,
+    /// Tags.
+    pub tags: Option<String>,
+}
+
+impl Message for GoodPhraseRequest {
+    type Result = Result<(), Error>;
+}
+
+impl Handler<GoodPhraseRequest> for DbExecutor {
+    type Result = <GoodPhraseRequest as Message>::Result;
+
+    fn handle(&mut self, msg: GoodPhraseRequest, _ctx: &mut Self::Context) -> Self::Result {
+        use schema::good_phrase_requests::columns;
+
+        let conn = &self.pool().get()?;
+        let now_utc = Local::now().naive_utc();
+
+        let GoodPhraseRequest {
+            title,
+            phrase,
+            person,
+            url,
+            deleted,
+            published_at,
+            tags,
+        } = msg;
+
+        let published_at_utc = published_at.map(|dt| dt.naive_utc());
+
+        let new_row = models::NewGoodPhraseRequest {
+            good_phrase_request_id: None,
+            title: &title,
+            phrase: &phrase,
+            person: &person,
+            url: url.as_ref().map(AsRef::as_ref),
+            deleted: deleted,
+            published_at: published_at_utc.as_ref(),
+            tags: tags.as_ref().map(AsRef::as_ref),
+        };
+
+        diesel::insert_into(schema::good_phrase_requests::table)
+            .values(new_row)
+            .execute(conn)?;
+
+        Ok(())
     }
 }
 
@@ -185,7 +252,8 @@ impl Handler<Person> for DbExecutor {
                             columns::real_name.eq(real_name),
                             columns::display_name.eq(display_name),
                             columns::twitter.eq(twitter),
-                        )).execute(conn)?;
+                        ))
+                        .execute(conn)?;
                     person_id
                 }
                 None => {
@@ -214,13 +282,15 @@ impl Handler<Person> for DbExecutor {
                 .select((
                     schema::person_urls::columns::person_url_id,
                     schema::person_urls::columns::url,
-                )).load::<(i32, String)>(conn)?;
+                ))
+                .load::<(i32, String)>(conn)?;
 
             for (delete_id, _) in current_urls.iter().filter(|(_, url)| !urls.contains(url)) {
                 diesel::delete(
                     schema::person_urls::table
                         .filter(schema::person_urls::columns::person_url_id.eq(delete_id)),
-                ).execute(conn)?;
+                )
+                .execute(conn)?;
             }
             for url in urls
                 .iter()

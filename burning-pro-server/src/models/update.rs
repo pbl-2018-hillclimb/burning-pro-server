@@ -50,6 +50,29 @@ pub struct NewGoodPhrase<'a> {
     pub published_at: Option<&'a NaiveDateTime>,
 }
 
+/// GoodPhraseRequest.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Insertable)]
+#[table_name = "good_phrase_requests"]
+#[primary_key(good_phrase_request_id)]
+pub struct NewGoodPhraseRequest<'a> {
+    /// Row ID.
+    pub good_phrase_request_id: Option<i32>,
+    /// Title.
+    pub title: &'a str,
+    /// Phrase.
+    pub phrase: &'a str,
+    /// Author.
+    pub person: &'a str,
+    /// URL of the phrase if exists.
+    pub url: Option<&'a str>,
+    /// Whether the phrase is deleted.
+    pub deleted: bool,
+    /// UTC datetime the phrase is published at (if known).
+    pub published_at: Option<&'a NaiveDateTime>,
+    /// Tags
+    pub tags: Option<&'a str>,
+}
+
 /// GoodPhrase and tag.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Hash, Serialize, Identifiable, Insertable)]
 #[table_name = "good_phrases_and_tags"]

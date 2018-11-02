@@ -103,7 +103,8 @@ fn get_impl(id: Option<i32>, req: &HttpRequest<AppState>) -> FutureResponse<Http
                 ctx.insert(phrase_tag.0, &phrase_tag.1);
             }
             render(&template, &ctx, "register/phrase/update.html")
-        }).responder()
+        })
+        .responder()
 }
 
 /// Processes the request for new phrase registration form.
@@ -172,5 +173,6 @@ pub fn post(req: HttpRequest<AppState>, form: Form<form::Phrase>) -> FutureRespo
                 error!("`admin::phrase::update()`: {}", e);
                 Err(ErrorInternalServerError("DB error"))
             }
-        }).responder()
+        })
+        .responder()
 }

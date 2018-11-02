@@ -33,6 +33,28 @@ pub struct Phrase {
     pub extra: HashMap<String, String>,
 }
 
+/// A phrase request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhraseRequest {
+    /// Title (short summary).
+    pub title: String,
+    /// Phrase.
+    pub phrase: String,
+    /// Author's name.
+    pub person: String,
+    /// URL of the phrase if it is posted or published to the WWW.
+    #[serde(deserialize_with = "deserialize_optstr")]
+    pub url: Option<String>,
+    /// Whether the source web page is deleted or not.
+    pub deleted: bool,
+    /// Datetime when the phrase is published.
+    #[serde(deserialize_with = "deserialize_optdate")]
+    pub published_at: Option<DateTime<Local>>,
+    /// Tags.
+    #[serde(flatten)]
+    pub tags: Option<String>,
+}
+
 /// A person.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Person {

@@ -51,7 +51,8 @@ macro_rules! regist_form_handler {
                 .resource("/new/", |r| {
                     r.get().with($new);
                     r.post().with($post);
-                }).resource("/{id}/", |r| {
+                })
+                .resource("/{id}/", |r| {
                     r.get().with($update);
                     r.post().with($post);
                 })
@@ -133,7 +134,8 @@ fn main() {
         "Burning Pro admin web UI",
         "ADMIN_WEB_USER",
         "ADMIN_WEB_PASSWORD",
-    ).expect("Failed to get admin web auth config");
+    )
+    .expect("Failed to get admin web auth config");
     let app_state = AppStateBuilder::new()
         .database_url(database_url)
         .admin_auth(admin_auth)
@@ -158,7 +160,8 @@ fn main() {
                             admin::phrase::update,
                             admin::phrase::post
                         ),
-                    ).nested(
+                    )
+                    .nested(
                         "/tag",
                         regist_form_handler!(
                             admin::tag::index,
@@ -166,7 +169,8 @@ fn main() {
                             admin::tag::update,
                             admin::tag::post
                         ),
-                    ).nested(
+                    )
+                    .nested(
                         "/person",
                         regist_form_handler!(
                             admin::person::index,
@@ -176,10 +180,15 @@ fn main() {
                         ),
                     )
             })
-    }).bind(&listen)
+            .scope("/request", |scope| {
+                scope.resource("/phrase_app/", |r| r.with(admin::phrase_request::post))
+            })
+    })
+    .bind(&listen)
     .unwrap_or_else(|e| {
         panic!("Failed to bind {}: {}", listen, e);
-    }).start();
+    })
+    .start();
 
     info!("started server ({})", listen);
 
