@@ -7,5 +7,5 @@ CREATE TABLE good_phrase_requests (
     deleted BOOLEAN NOT NULL DEFAULT 0,
     published_at TIMESTAMP,
     tags VARCHAR,
-    UNIQUE(phrase)
+    UNIQUE(good_phrase_request_id)
 );
