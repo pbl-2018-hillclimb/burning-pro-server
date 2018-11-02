@@ -88,9 +88,9 @@ impl Handler<GoodPhrase> for DbExecutor {
                         modified_at: &now_utc,
                         title: &title,
                         phrase: &phrase,
-                        person_id: person_id,
+                        person_id,
                         url: url.as_ref().map(AsRef::as_ref),
-                        deleted: deleted,
+                        deleted,
                         published_at: published_at_utc.as_ref(),
                     };
                     // NOTE: SQLite backend does not support "returning clause".
@@ -165,10 +165,9 @@ impl Handler<GoodPhraseRequest> for DbExecutor {
     type Result = <GoodPhraseRequest as Message>::Result;
 
     fn handle(&mut self, msg: GoodPhraseRequest, _ctx: &mut Self::Context) -> Self::Result {
-        use schema::good_phrase_requests::{columns, table};
+        use schema::good_phrase_requests::table;
 
         let conn = &self.pool().get()?;
-        let now_utc = Local::now().naive_utc();
 
         let GoodPhraseRequest {
             title,
@@ -188,7 +187,7 @@ impl Handler<GoodPhraseRequest> for DbExecutor {
             phrase: &phrase,
             person: &person,
             url: url.as_ref().map(AsRef::as_ref),
-            deleted: deleted,
+            deleted,
             published_at: published_at_utc.as_ref(),
             tags: tags.as_ref().map(AsRef::as_ref),
         };
@@ -291,8 +290,8 @@ impl Handler<Person> for DbExecutor {
                     person_url_id: None,
                     created_at: &now_utc,
                     modified_at: &now_utc,
-                    person_id: person_id,
-                    url: url,
+                    person_id,
+                    url,
                 };
                 diesel::insert_into(schema::person_urls::table)
                     .values(row)
