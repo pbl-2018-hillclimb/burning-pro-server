@@ -33,6 +33,27 @@ pub struct Phrase {
     pub extra: HashMap<String, String>,
 }
 
+/// A phrase request.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PhraseRequest {
+    /// Title (short summary).
+    pub title: String,
+    /// Phrase.
+    pub phrase: String,
+    /// Author's name.
+    pub person: String,
+    /// URL of the phrase if it is posted or published to the WWW.
+    #[serde(deserialize_with = "deserialize_optstr")]
+    pub url: Option<String>,
+    /// Whether the source web page is deleted or not.
+    pub deleted: bool,
+    /// Datetime when the phrase is published.
+    #[serde(deserialize_with = "deserialize_isodate")]
+    pub published_at: Option<DateTime<Local>>,
+    /// Tags.
+    pub tags: Option<String>,
+}
+
 /// A person.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Person {
@@ -164,4 +185,37 @@ where
     }
 
     deserializer.deserialize_any(OptdateVisitor)
+}
+
+/// Custom deserializer for `Option<DateTime<Local>>`
+///
+/// Convert ISO8601 style string -> `Option<DateTime<Local>>`
+fn deserialize_isodate<'de, D>(deserializer: D) -> Result<Option<DateTime<Local>>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    struct IsodateVisitor;
+
+    impl<'de> de::Visitor<'de> for IsodateVisitor {
+        type Value = Option<DateTime<Local>>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a string `YYYY-MM-DDThh:mm:ssZZZ`")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            if v.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(
+                    v.parse::<DateTime<Local>>().map_err(de::Error::custom)?,
+                ))
+            }
+        }
+    }
+
+    deserializer.deserialize_any(IsodateVisitor)
 }

@@ -11,6 +11,7 @@ use app::AppState;
 pub mod form;
 pub mod person;
 pub mod phrase;
+pub mod phrase_request;
 pub mod tag;
 
 /// Renders web pages.

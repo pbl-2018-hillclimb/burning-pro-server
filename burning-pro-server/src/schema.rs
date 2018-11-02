@@ -1,4 +1,17 @@
 table! {
+    good_phrase_requests (good_phrase_request_id) {
+        good_phrase_request_id -> Integer,
+        title -> Text,
+        phrase -> Text,
+        person -> Text,
+        url -> Nullable<Text>,
+        deleted -> Bool,
+        published_at -> Nullable<Timestamp>,
+        tags -> Nullable<Text>,
+    }
+}
+
+table! {
     good_phrase_tags (good_phrase_tag_id) {
         good_phrase_tag_id -> Integer,
         created_at -> Timestamp,
@@ -59,6 +72,7 @@ joinable!(good_phrases_and_tags -> good_phrases (good_phrase_id));
 joinable!(person_urls -> persons (person_id));
 
 allow_tables_to_appear_in_same_query!(
+    good_phrase_requests,
     good_phrase_tags,
     good_phrases,
     good_phrases_and_tags,

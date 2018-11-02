@@ -175,6 +175,8 @@ fn main() {
                             admin::person::post
                         ),
                     )
+            }).scope("/request", |scope| {
+                scope.resource("/phrase_app/", |r| r.with(admin::phrase_request::post))
             })
     }).bind(&listen)
     .unwrap_or_else(|e| {
