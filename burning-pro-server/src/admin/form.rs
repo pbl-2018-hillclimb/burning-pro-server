@@ -51,7 +51,6 @@ pub struct PhraseRequest {
     #[serde(deserialize_with = "deserialize_optdate")]
     pub published_at: Option<DateTime<Local>>,
     /// Tags.
-    #[serde(flatten)]
     pub tags: Option<String>,
 }
 
