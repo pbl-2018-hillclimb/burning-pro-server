@@ -20,24 +20,24 @@ pub fn post(
     let mut form_content = form.into_inner();
     form_content.phrase = form_content.phrase.trim().to_string();
     debug!("receive form:\n{:#?}", &form_content);
-    let upsert_msg = match form_content.to_owned() {
-        form::PhraseRequest {
-            title,
-            phrase,
-            person,
-            url,
-            deleted,
-            published_at,
-            tags,
-        } => upsert_entry::GoodPhraseRequest {
-            title,
-            phrase,
-            person,
-            url,
-            deleted,
-            published_at,
-            tags,
-        },
+    let form::PhraseRequest {
+        title,
+        phrase,
+        person,
+        url,
+        deleted,
+        published_at,
+        tags,
+    } = form_content.to_owned();
+
+    let upsert_msg = upsert_entry::GoodPhraseRequest {
+        title,
+        phrase,
+        person,
+        url,
+        deleted,
+        published_at,
+        tags,
     };
 
     let db = req.state().db();
