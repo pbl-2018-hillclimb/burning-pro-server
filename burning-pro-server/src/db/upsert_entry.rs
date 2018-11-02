@@ -165,7 +165,7 @@ impl Handler<GoodPhraseRequest> for DbExecutor {
     type Result = <GoodPhraseRequest as Message>::Result;
 
     fn handle(&mut self, msg: GoodPhraseRequest, _ctx: &mut Self::Context) -> Self::Result {
-        use schema::good_phrase_requests::columns;
+        use schema::good_phrase_requests::{columns, table};
 
         let conn = &self.pool().get()?;
         let now_utc = Local::now().naive_utc();
@@ -193,9 +193,7 @@ impl Handler<GoodPhraseRequest> for DbExecutor {
             tags: tags.as_ref().map(AsRef::as_ref),
         };
 
-        diesel::insert_into(schema::good_phrase_requests::table)
-            .values(new_row)
-            .execute(conn)?;
+        diesel::insert_into(table).values(new_row).execute(conn)?;
 
         Ok(())
     }
