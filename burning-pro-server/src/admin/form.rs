@@ -48,7 +48,7 @@ pub struct PhraseRequest {
     /// Whether the source web page is deleted or not.
     pub deleted: bool,
     /// Datetime when the phrase is published.
-    #[serde(deserialize_with = "deserialize_optdate")]
+    #[serde(deserialize_with = "deserialize_isodate")]
     pub published_at: Option<DateTime<Local>>,
     /// Tags.
     pub tags: Option<String>,
@@ -185,4 +185,37 @@ where
     }
 
     deserializer.deserialize_any(OptdateVisitor)
+}
+
+/// Custom deserializer for `Option<DateTime<Local>>`
+///
+/// Convert ISO8601 style string -> `Option<DateTime<Local>>`
+fn deserialize_isodate<'de, D>(deserializer: D) -> Result<Option<DateTime<Local>>, D::Error>
+where
+    D: de::Deserializer<'de>,
+{
+    struct IsodateVisitor;
+
+    impl<'de> de::Visitor<'de> for IsodateVisitor {
+        type Value = Option<DateTime<Local>>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a string `YYYY-MM-DDThh:mm:ss`")
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: de::Error,
+        {
+            if v.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(
+                    v.parse::<DateTime<Local>>().map_err(de::Error::custom)?,
+                ))
+            }
+        }
+    }
+
+    deserializer.deserialize_any(IsodateVisitor)
 }
