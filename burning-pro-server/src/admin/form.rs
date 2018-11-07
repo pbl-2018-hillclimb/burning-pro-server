@@ -178,7 +178,7 @@ where
                 let tz_offset = FixedOffset::east(9 * 60 * 60);
                 Local::from_offset(&tz_offset)
                     .datetime_from_str(v, "%Y-%m-%dT%H:%M:%S")
-                    .map(|dt| Some(dt))
+                    .map(Some)
                     .map_err(de::Error::custom)
             }
         }

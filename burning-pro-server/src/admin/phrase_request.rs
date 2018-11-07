@@ -1,7 +1,5 @@
 //! Handler module for phrase request
 
-use std::sync::Arc;
-
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{AsyncResponder, FutureResponse, HttpRequest, HttpResponse, Json};
 use futures::future::Future;
@@ -11,6 +9,7 @@ use app::AppState;
 use db::upsert_entry;
 
 /// Processes the phrase request query
+#[allow(unknown_lints, needless_pass_by_value)]
 pub fn post(
     req: HttpRequest<AppState>,
     form: Json<form::PhraseRequest>,
@@ -41,7 +40,6 @@ pub fn post(
     };
 
     let db = req.state().db();
-    let template = Arc::clone(req.state().template());
     db.send(upsert_msg)
         .from_err()
         .and_then(move |res| match res {
