@@ -57,8 +57,6 @@ pub struct NewGoodPhrase<'a> {
 pub struct NewGoodPhraseRequest<'a> {
     /// Row ID.
     pub good_phrase_request_id: Option<i32>,
-    /// Title.
-    pub title: &'a str,
     /// Phrase.
     pub phrase: &'a str,
     /// Author.
@@ -69,8 +67,6 @@ pub struct NewGoodPhraseRequest<'a> {
     pub deleted: bool,
     /// UTC datetime the phrase is published at (if known).
     pub published_at: Option<&'a NaiveDateTime>,
-    /// Tags
-    pub tags: Option<&'a str>,
 }
 
 /// GoodPhrase and tag.
