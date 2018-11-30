@@ -1,13 +1,11 @@
 table! {
     good_phrase_requests (good_phrase_request_id) {
         good_phrase_request_id -> Integer,
-        title -> Text,
         phrase -> Text,
         person -> Text,
         url -> Nullable<Text>,
         deleted -> Bool,
         published_at -> Nullable<Timestamp>,
-        tags -> Nullable<Text>,
     }
 }
 

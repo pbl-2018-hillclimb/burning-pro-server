@@ -36,8 +36,6 @@ pub struct Phrase {
 /// A phrase request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PhraseRequest {
-    /// Title (short summary).
-    pub title: String,
     /// Phrase.
     pub phrase: String,
     /// Author's name.
@@ -50,8 +48,6 @@ pub struct PhraseRequest {
     /// Datetime when the phrase is published.
     #[serde(deserialize_with = "deserialize_isodate")]
     pub published_at: Option<DateTime<Local>>,
-    /// Tags.
-    pub tags: Option<String>,
 }
 
 /// A person.

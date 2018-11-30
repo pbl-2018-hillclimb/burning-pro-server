@@ -141,8 +141,6 @@ impl Handler<GoodPhrase> for DbExecutor {
 /// A phrase request
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct GoodPhraseRequest {
-    /// Title (short summary)
-    pub title: String,
     /// Phrase.
     pub phrase: String,
     /// Author's name.
@@ -153,8 +151,6 @@ pub struct GoodPhraseRequest {
     pub deleted: bool,
     /// Datetime when the phrase is published.
     pub published_at: Option<DateTime<Local>>,
-    /// Tags.
-    pub tags: Option<String>,
 }
 
 impl Message for GoodPhraseRequest {
@@ -170,26 +166,22 @@ impl Handler<GoodPhraseRequest> for DbExecutor {
         let conn = &self.pool().get()?;
 
         let GoodPhraseRequest {
-            title,
             phrase,
             person,
             url,
             deleted,
             published_at,
-            tags,
         } = msg;
 
         let published_at_utc = published_at.map(|dt| dt.naive_utc());
 
         let new_row = models::NewGoodPhraseRequest {
             good_phrase_request_id: None,
-            title: &title,
             phrase: &phrase,
             person: &person,
             url: url.as_ref().map(AsRef::as_ref),
             deleted,
             published_at: published_at_utc.as_ref(),
-            tags: tags.as_ref().map(AsRef::as_ref),
         };
 
         diesel::insert_into(table).values(new_row).execute(conn)?;
