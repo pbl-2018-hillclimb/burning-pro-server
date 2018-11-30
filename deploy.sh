@@ -17,7 +17,7 @@ git pull --ff-only
 docker build -t ${image_name} .
 
 # stop old container (automatically removed by --rm option)
-for container_id in $(docker ps -aq --filter "ancestor=${image_name}");
+for container_id in $(docker ps -aq --filter "name=${container_name}");
 do
     docker stop ${container_id}
 done
