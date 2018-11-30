@@ -1,12 +1,42 @@
 //! Handler module for phrase request
 
+use std::sync::Arc;
+
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{AsyncResponder, FutureResponse, HttpRequest, HttpResponse, Json};
 use futures::future::Future;
 
-use admin::form;
+use admin::{form, list_impl, render};
 use app::AppState;
-use db::upsert_entry;
+use db::{upsert_entry, GoodPhraseRequestQuery};
+use tera::Context;
+
+/// Processes the request for phrase request registration index.
+pub fn index(req: HttpRequest<AppState>) -> FutureResponse<HttpResponse> {
+    debug!("request for `admin::phrase_request::index()`: {:?}", req);
+
+    let db = req.state().db();
+    let rows = db
+        .send(GoodPhraseRequestQuery::All)
+        .from_err()
+        .and_then(move |res| match res {
+            Ok(contents) => Ok(contents),
+            Err(e) => {
+                error!("`admin::phrase_request::index()`: {}", e);
+                Err(ErrorInternalServerError("DB Error"))
+            }
+        });
+    let template = Arc::clone(req.state().template());
+    let mut ctx = Context::new();
+    rows.map(move |rows| {
+        ctx.insert("rows", &rows);
+        render(
+            &template,
+            &ctx,
+            "register/phrase_request/phrase_request.html",
+        )
+    }).responder()
+}
 
 /// Processes the phrase request query
 #[allow(unknown_lints, needless_pass_by_value)]
