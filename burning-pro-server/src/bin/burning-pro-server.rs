@@ -174,7 +174,9 @@ fn main() {
                             admin::person::update,
                             admin::person::post
                         ),
-                    )
+                    ).nested("/phrase_request", |scope| {
+                        scope.resource("/", |r| r.get().with(admin::phrase_request::index))
+                    })
             }).scope("/request", |scope| {
                 scope.resource("/phrase_app/", |r| r.with(admin::phrase_request::post))
             })

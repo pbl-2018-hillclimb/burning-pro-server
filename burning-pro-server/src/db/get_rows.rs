@@ -171,3 +171,42 @@ impl Handler<PersonQuery> for DbExecutor {
         Ok(res)
     }
 }
+
+/// Query type for [`GoodPhraseRequest`][`models::GoodPhraseRequest`].
+pub enum GoodPhraseRequestQuery {
+    /// Query all rows.
+    All,
+    /// Query rows for the given phrase request id
+    PhraseId(i32),
+}
+
+impl RowQuery for GoodPhraseRequestQuery {
+    type Row = models::GoodPhraseRequest;
+}
+
+impl Message for GoodPhraseRequestQuery {
+    type Result = Result<Vec<<GoodPhraseRequestQuery as RowQuery>::Row>, Error>;
+}
+
+impl Handler<GoodPhraseRequestQuery> for DbExecutor {
+    type Result = <GoodPhraseRequestQuery as Message>::Result;
+
+    fn handle(
+        &mut self,
+        msg: GoodPhraseRequestQuery,
+        ctx: &mut Self::Context,
+    ) -> <Self as Handler<GoodPhraseRequestQuery>>::Result {
+        let conn = &self.pool().get()?;
+        let res = match msg {
+            GoodPhraseRequestQuery::All => {
+                GoodPhraseRequestQuery::table().load::<models::GoodPhraseRequest>(conn)?
+            }
+            GoodPhraseRequestQuery::PhraseId(phrase_id) => vec![
+                GoodPhraseRequestQuery::table()
+                    .find(phrase_id)
+                    .first(conn)?,
+            ],
+        };
+        Ok(res)
+    }
+}

@@ -149,3 +149,33 @@ pub struct Person {
     /// Twitter account (if known).
     pub twitter: Option<String>,
 }
+
+/// GoodPhraseRequest.
+#[derive(
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Hash,
+    Serialize,
+    Associations,
+    Identifiable,
+    Queryable,
+    Insertable,
+)]
+#[primary_key(good_phrase_request_id)]
+pub struct GoodPhraseRequest {
+    /// Row ID.
+    pub good_phrase_request_id: i32,
+    /// Phrase.
+    pub phrase: String,
+    /// Author.
+    pub person: String,
+    /// URL of the phrase if exists.
+    pub url: Option<String>,
+    /// Whether the phrase is deleted.
+    pub deleted: bool,
+    /// UTC datetime the phrase is published at (if known).
+    pub published_at: Option<NaiveDateTime>,
+}
