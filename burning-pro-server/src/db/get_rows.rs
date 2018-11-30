@@ -194,7 +194,7 @@ impl Handler<GoodPhraseRequestQuery> for DbExecutor {
     fn handle(
         &mut self,
         msg: GoodPhraseRequestQuery,
-        ctx: &mut Self::Context,
+        _ctx: &mut Self::Context,
     ) -> <Self as Handler<GoodPhraseRequestQuery>>::Result {
         let conn = &self.pool().get()?;
         let res = match msg {
